@@ -17,7 +17,8 @@ defmodule CardsWeb.Router do
   scope "/", CardsWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    live "/", PageLive, :index
+    live "/:id", RoomLive, :index
   end
 
   # Other scopes may use custom stacks.

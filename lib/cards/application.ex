@@ -15,7 +15,8 @@ defmodule Cards.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Cards.PubSub},
       # Start the Endpoint (http/https)
-      CardsWeb.Endpoint
+      CardsWeb.Endpoint,
+      CardsWeb.Presence
       # Start a worker by calling: Cards.Worker.start_link(arg)
       # {Cards.Worker, arg}
     ]
