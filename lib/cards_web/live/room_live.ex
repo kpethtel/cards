@@ -3,9 +3,8 @@ defmodule CardsWeb.RoomLive do
   require Logger
 
   @impl true
-  def mount(%{"id" => room_id}, _session, socket) do
+  def mount(%{"id" => room_id, "username" => username}, _session, socket) do
     topic = "room:" <> room_id
-    username = MnemonicSlugs.generate_slug(2)
 
     if connected?(socket) do
       CardsWeb.Endpoint.subscribe(topic)
