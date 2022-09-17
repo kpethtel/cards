@@ -1,17 +1,20 @@
 <p>Currently chatting in <strong><%= @room_id %></strong> as <strong><%= @username %></strong></p>
 
-<div id="chat-container">
-  <div id="chat-messages" phx-update="append">
-    <%= for message <- @messages do %>
-      <%= display_message(message) %>
-    <% end %>
+<div id="room-container">
+  <div id="game-board">
   </div>
-
-  <div id="user-list">
-    <h3> Users online</h3>
-    <%= for user <- @user_list do %>
-      <p><%= user %></p>
-    <% end %>
+  <div id="chat-column">
+    <div id="user-list">
+      <h3> Users online</h3>
+      <%= for user <- @user_list do %>
+        <p><%= user %></p>
+      <% end %>
+    </div>
+    <div id="chat-messages" phx-update="append">
+      <%= for message <- @messages do %>
+        <%= display_message(message) %>
+      <% end %>
+    </div>
   </div>
 </div>
 

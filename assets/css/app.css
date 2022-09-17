@@ -1,17 +1,30 @@
 /* This file is for your main application CSS */
 @import "./phoenix.css";
 
-#chat-container {
+#room-container {
   display: flex;
   justify-content:  space-between;
   height: 500px;
 }
 
+#game-board {
+  border: 1px solid #08402c;
+  float: left;
+  width: 70%;
+}
+
 #chat-messages {
-  flex-grow: 1;
-  border: 1px solid #cccccc;
-  margin: -1em 1em 1em -1em;
+  border: 1px solid #08402c;
+  height: 100%;
   padding: 1em;
+  padding: .2em .5em;
+}
+
+#chat-column {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 30%;
 }
 
 #chat-messages p {
@@ -19,9 +32,17 @@
   padding: 0;
 }
 
+#user-list {
+  border: 1px solid #08402c;
+  padding: .2em .5em;
+}
+
 #user-list p {
   margin: 0;
-  padding: 0;
+}
+
+#user-list h3 {
+  margin: 0;
 }
 
 /* Alerts and form errors used by phx.new */
