@@ -1,6 +1,8 @@
 defmodule CardsWeb.RoomLive do
   use CardsWeb, :live_view
   require Logger
+  require HTTPoison
+  require Poison
 
   @impl true
   def mount(%{"id" => room_id, "username" => username}, _session, socket) do
@@ -20,7 +22,8 @@ defmodule CardsWeb.RoomLive do
       message: "",
       messages: [],
       user_list: [],
-      temporary_assigns: [messages: []]
+      image: "",
+      temporary_assigns: [messages: [], image: ""]
     )}
   end
 
@@ -39,8 +42,10 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_info(%{event: "new-message", payload: message}, socket) do
+    Logger.info("HANDLING INFO")
     Logger.info(payload: message)
-    {:noreply, assign(socket, messages: [message])}
+    image = fetch_image(message[:content])
+    {:noreply, assign(socket, messages: [message], image: image)}
   end
 
   @impl true
@@ -64,17 +69,28 @@ defmodule CardsWeb.RoomLive do
   end
 
   def display_message(assigns = %{type: :system, uuid: uuid, content: content}) do
-    Logger.info("HERE " <> uuid)
+    Logger.info("DISPLAY SYSTEM " <> uuid)
     ~H"""
     <p id={uuid}><em><%= content %></em></p>
     """
   end
 
   def display_message(assigns = %{uuid: uuid, content: content, username: username}) do
-    Logger.info("THERE " <> uuid)
-
+    Logger.info("DISPLAY CONTENT " <> uuid)
     ~H"""
     <p id={uuid}><strong> <%= username %> </strong>: <%= content %></p>
     """
+  end
+
+  def fetch_image(message) do
+    url = "https://example.com" <> message
+    response = HTTPoison.get!(url)
+    Logger.info(response)
+    decoded = Poison.decode!(response.body)
+    Logger.info("DECODED")
+    data = decoded["data"]
+    first_url = Enum.at(data, 0)["images"]["original"]["url"]
+    Logger.info(first_url)
+    first_url
   end
 end
