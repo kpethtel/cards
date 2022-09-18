@@ -83,7 +83,10 @@ defmodule CardsWeb.RoomLive do
   end
 
   def fetch_image(message) do
-    url = "https://example.com" <> message
+    giphy_base_url = Application.get_env(:cards, :base_url)
+    giphy_api_key = Application.get_env(:cards, :api_key)
+    Logger.info(giphy_base_url)
+    url = giphy_base_url <> "?" <> "api_key=" <> giphy_api_key <> "&q=" <> message
     response = HTTPoison.get!(url)
     Logger.info(response)
     decoded = Poison.decode!(response.body)
