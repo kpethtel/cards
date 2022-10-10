@@ -11,6 +11,7 @@ defmodule CardsWeb.RoomLive do
     if connected?(socket) do
       CardsWeb.Endpoint.subscribe(topic)
       CardsWeb.Presence.track(self(), topic, username, %{})
+      CardsWeb.Game.add_message(:default, username)
     end
 
     {:ok,

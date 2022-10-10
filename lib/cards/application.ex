@@ -16,9 +16,10 @@ defmodule Cards.Application do
       {Phoenix.PubSub, name: Cards.PubSub},
       # Start the Endpoint (http/https)
       CardsWeb.Endpoint,
-      CardsWeb.Presence
+      CardsWeb.Presence,
       # Start a worker by calling: Cards.Worker.start_link(arg)
       # {Cards.Worker, arg}
+      {CardsWeb.Game, name: :default}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
