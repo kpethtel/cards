@@ -19,6 +19,8 @@ defmodule Cards.Application do
       CardsWeb.Presence,
       # Start a worker by calling: Cards.Worker.start_link(arg)
       # {Cards.Worker, arg}
+
+      # will need to change this to https://hexdocs.pm/elixir/DynamicSupervisor.html
       {CardsWeb.Game, name: :default}
     ]
 

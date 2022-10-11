@@ -11,7 +11,7 @@ defmodule CardsWeb.RoomLive do
     if connected?(socket) do
       CardsWeb.Endpoint.subscribe(topic)
       CardsWeb.Presence.track(self(), topic, username, %{})
-      CardsWeb.Game.add_message(:default, username)
+      CardsWeb.Game.add_user(:default, username)
     end
 
     {:ok,
@@ -30,7 +30,9 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("submit_message", %{"chat" => %{"message" => message}}, socket) do
-    message = %{uuid: UUID.uuid4(), content: message, username: socket.assigns.username}
+    username = socket.assigns.username
+    CardsWeb.Game.add_message(:default, username, message)
+    message = %{uuid: UUID.uuid4(), content: message, username: username}
     CardsWeb.Endpoint.broadcast(socket.assigns.topic, "new-message", message)
     {:noreply, assign(socket, message: "")}
   end
