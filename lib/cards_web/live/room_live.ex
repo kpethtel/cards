@@ -89,15 +89,12 @@ defmodule CardsWeb.RoomLive do
     encoded_message = URI.encode(message)
     giphy_base_url = Application.get_env(:cards, :base_url)
     giphy_api_key = Application.get_env(:cards, :api_key)
-    Logger.info(giphy_base_url)
-    url = giphy_base_url <> "?" <> "api_key=" <> giphy_api_key <> "&q=" <> encoded_message
+    url = giphy_base_url <> "?" <> "api_key=" <> giphy_api_key <> "&q=" <> encoded_message <> "&limit=10"
     response = HTTPoison.get!(url)
-    Logger.info(response)
     decoded = Poison.decode!(response.body)
-    Logger.info("DECODED")
     data = decoded["data"]
-    first_url = Enum.at(data, 0)["images"]["original"]["url"]
-    Logger.info(first_url)
+    links = Enum.map(data, fn x -> get_in(x, ["images", "original", "url"]) end)
+    first_url = Enum.at(links, 0)
     first_url
   end
 end

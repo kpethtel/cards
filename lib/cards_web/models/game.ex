@@ -26,7 +26,7 @@ defmodule CardsWeb.Game do
   @impl true
   def handle_cast({:add_message, username, message}, state) do
     Logger.info("ADDING MESSAGE TO STATE")
-    message_list = state |> Map.get(username) |> Map.get(:messages)
+    message_list = get_in(state, [username, :messages])
     message_list = [message | message_list]
     state = put_in(state, [username, :messages], message_list)
     Logger.info("STATE")
