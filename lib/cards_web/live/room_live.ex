@@ -30,9 +30,7 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("submit_message", %{"chat" => %{"message" => message}}, socket) do
-    username = socket.assigns.username
-    CardsWeb.Game.add_message(:default, username, message)
-    message = %{uuid: UUID.uuid4(), content: message, username: username}
+    message = %{uuid: UUID.uuid4(), content: message, username: socket.assigns.username}
     CardsWeb.Endpoint.broadcast(socket.assigns.topic, "new-message", message)
     {:noreply, assign(socket, message: "")}
   end
@@ -47,7 +45,7 @@ defmodule CardsWeb.RoomLive do
   def handle_info(%{event: "new-message", payload: message}, socket) do
     Logger.info("HANDLING INFO")
     Logger.info(payload: message)
-    image = fetch_image(message[:content])
+    image = fetch_image(socket.assigns.username, message[:content])
     {:noreply, assign(socket, messages: [message], image: image)}
   end
 
@@ -85,7 +83,8 @@ defmodule CardsWeb.RoomLive do
     """
   end
 
-  def fetch_image(message) do
+  # TODO: break this method up
+  def fetch_image(username, message) do
     encoded_message = URI.encode(message)
     giphy_base_url = Application.get_env(:cards, :base_url)
     giphy_api_key = Application.get_env(:cards, :api_key)
@@ -94,6 +93,7 @@ defmodule CardsWeb.RoomLive do
     decoded = Poison.decode!(response.body)
     data = decoded["data"]
     links = Enum.map(data, fn x -> get_in(x, ["images", "original", "url"]) end)
+    CardsWeb.Game.add_image_links(:default, username, links)
     first_url = Enum.at(links, 0)
     first_url
   end

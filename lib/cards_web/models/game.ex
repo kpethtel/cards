@@ -17,18 +17,18 @@ defmodule CardsWeb.Game do
     Logger.info("ADDING USER TO STATE")
     Logger.info("name #{name}")
 
-    state = Map.put(state, name, %{messages: []})
+    state = Map.put(state, name, %{links: []})
     Logger.info("STATE")
     Logger.info(state)
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:add_message, username, message}, state) do
-    Logger.info("ADDING MESSAGE TO STATE")
-    message_list = get_in(state, [username, :messages])
-    message_list = [message | message_list]
-    state = put_in(state, [username, :messages], message_list)
+  def handle_cast({:add_links, username, links}, state) do
+    Logger.info("ADDING LINKS TO STATE")
+    links_list = get_in(state, [username, :links])
+    links_list = [links | links_list]
+    state = put_in(state, [username, :links], links_list)
     Logger.info("STATE")
     Logger.info(state)
     {:noreply, state}
@@ -39,10 +39,8 @@ defmodule CardsWeb.Game do
     GenServer.cast(server, {:add, name})
   end
 
-  def add_message(server, username, message) do
-    Logger.info("ADDING MESSAGE")
-    Logger.info(message)
-    Logger.info(username)
-    GenServer.cast(server, {:add_message, username, message})
+  def add_image_links(server, username, links) do
+    Logger.info("ADDING IMAGES")
+    GenServer.cast(server, {:add_links, username, links})
   end
 end
