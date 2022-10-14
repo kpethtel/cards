@@ -69,6 +69,12 @@ defmodule CardsWeb.RoomLive do
     {:noreply, assign(socket, messages: join_messages ++ leave_messages, user_list: user_list)}
   end
 
+  @impl true
+  def handle_event("button", %{"value" => ""}, socket) do
+    Logger.info('PRESSED THE BUTTON')
+    {:noreply, socket}
+  end
+
   def display_message(assigns = %{type: :system, uuid: uuid, content: content}) do
     Logger.info("DISPLAY SYSTEM " <> uuid)
     ~H"""
