@@ -26,12 +26,26 @@ defmodule CardsWeb.Game do
   @impl true
   def handle_cast({:add_links, username, links}, state) do
     Logger.info("ADDING LINKS TO STATE")
-    links_list = get_in(state, [username, :links])
-    links_list = [links | links_list]
-    state = put_in(state, [username, :links], links_list)
-    Logger.info("STATE")
-    Logger.info(state)
+    state = put_in(state, [username, :links], links)
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_call({:fetch_link, username, direction}, _from, state) do
+    Logger.info("HANDLE IMAGE CALL")
+    links = get_in(state, [username, :links])
+    new_links = if (direction == "previous") do
+      Logger.info("PREVIOUSING")
+      {tail_tip, long_head} = List.pop_at(links, -1)
+      [tail_tip | long_head]
+    else
+      Logger.info("NEXTING")
+      {head, tail} = List.pop_at(links, 0)
+      List.insert_at(tail, -1, head)
+    end
+    new_image = Enum.fetch(new_links, 0)
+    state = put_in(state, [username, :links], new_links)
+    {:reply, new_image, state}
   end
 
   def add_user(server, name) do
@@ -42,5 +56,10 @@ defmodule CardsWeb.Game do
   def add_image_links(server, username, links) do
     Logger.info("ADDING IMAGES")
     GenServer.cast(server, {:add_links, username, links})
+  end
+
+  def fetch_image_from_state(server, username, direction) do
+    Logger.info("FETCHING IMAGE FROM STATE")
+    GenServer.call(server, {:fetch_link, username, direction})
   end
 end

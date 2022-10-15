@@ -70,9 +70,17 @@ defmodule CardsWeb.RoomLive do
   end
 
   @impl true
-  def handle_event("button", %{"value" => ""}, socket) do
-    Logger.info('PRESSED THE BUTTON')
-    {:noreply, socket}
+  def handle_event("change_image", %{"direction" => "previous"}, socket) do
+    Logger.info("PREVIOUS")
+    {:ok, image} = CardsWeb.Game.fetch_image_from_state(:default, socket.assigns.username, "previous")
+    {:noreply, assign(socket, image: image)}
+  end
+
+  @impl true
+  def handle_event("change_image", %{"direction" => "next"}, socket) do
+    Logger.info("NEXT")
+    {:ok, image} = CardsWeb.Game.fetch_image_from_state(:default, socket.assigns.username, "next")
+    {:noreply, assign(socket, image: image)}
   end
 
   def display_message(assigns = %{type: :system, uuid: uuid, content: content}) do
