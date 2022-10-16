@@ -107,6 +107,7 @@ defmodule CardsWeb.RoomLive do
     decoded = Poison.decode!(response.body)
     data = decoded["data"]
     links = Enum.map(data, fn x -> get_in(x, ["images", "original", "url"]) end)
+    links = Enum.shuffle(links)
     CardsWeb.Game.add_image_links(:default, username, links)
     first_url = Enum.at(links, 0)
     first_url
