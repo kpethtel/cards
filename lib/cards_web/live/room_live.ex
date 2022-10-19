@@ -45,8 +45,12 @@ defmodule CardsWeb.RoomLive do
   def handle_info(%{event: "new-message", payload: message}, socket) do
     Logger.info("HANDLING INFO")
     Logger.info(payload: message)
-    image = fetch_image(socket.assigns.username, message[:content])
-    {:noreply, assign(socket, messages: [message], image: image)}
+    username = socket.assigns.username
+    links = fetch_gifs(username, message[:content])
+    links = Enum.shuffle(links)
+    CardsWeb.Game.initialize_gif_deck(:default, username, links)
+    first_url = CardsWeb.Game.fetch_current_image(:default, username)
+    {:noreply, assign(socket, messages: [message], image: first_url)}
   end
 
   @impl true
@@ -72,15 +76,19 @@ defmodule CardsWeb.RoomLive do
   @impl true
   def handle_event("change_image", %{"direction" => "previous"}, socket) do
     Logger.info("PREVIOUS")
-    {:ok, image} = CardsWeb.Game.fetch_image_from_state(:default, socket.assigns.username, "previous")
-    {:noreply, assign(socket, image: image)}
+    username = socket.assigns.username
+    CardsWeb.Game.change_gif_index(:default, username, "previous")
+    new_gif = CardsWeb.Game.fetch_current_image(:default, username)
+    {:noreply, assign(socket, image: new_gif)}
   end
 
   @impl true
   def handle_event("change_image", %{"direction" => "next"}, socket) do
     Logger.info("NEXT")
-    {:ok, image} = CardsWeb.Game.fetch_image_from_state(:default, socket.assigns.username, "next")
-    {:noreply, assign(socket, image: image)}
+    username = socket.assigns.username
+    CardsWeb.Game.change_gif_index(:default, username, "next")
+    new_gif = CardsWeb.Game.fetch_current_image(:default, username)
+    {:noreply, assign(socket, image: new_gif)}
   end
 
   def display_message(assigns = %{type: :system, uuid: uuid, content: content}) do
@@ -97,8 +105,7 @@ defmodule CardsWeb.RoomLive do
     """
   end
 
-  # TODO: break this method up
-  def fetch_image(username, message) do
+  def fetch_gifs(username, message) do
     encoded_message = URI.encode(message)
     giphy_base_url = Application.get_env(:cards, :base_url)
     giphy_api_key = Application.get_env(:cards, :api_key)
@@ -106,10 +113,6 @@ defmodule CardsWeb.RoomLive do
     response = HTTPoison.get!(url)
     decoded = Poison.decode!(response.body)
     data = decoded["data"]
-    links = Enum.map(data, fn x -> get_in(x, ["images", "original", "url"]) end)
-    links = Enum.shuffle(links)
-    CardsWeb.Game.add_image_links(:default, username, links)
-    first_url = Enum.at(links, 0)
-    first_url
+    Enum.map(data, fn x -> get_in(x, ["images", "original", "url"]) end)
   end
 end

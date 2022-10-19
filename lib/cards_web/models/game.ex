@@ -17,35 +17,35 @@ defmodule CardsWeb.Game do
     Logger.info("ADDING USER TO STATE")
     Logger.info("name #{name}")
 
-    state = Map.put(state, name, %{links: []})
+    state = Map.put(state, name, %{links: [], gif_index: 0})
     Logger.info("STATE")
     Logger.info(state)
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:add_links, username, links}, state) do
+  def handle_cast({:load_gif_links, username, links}, state) do
     Logger.info("ADDING LINKS TO STATE")
     state = put_in(state, [username, :links], links)
     {:noreply, state}
   end
 
   @impl true
-  def handle_call({:fetch_link, username, direction}, _from, state) do
-    Logger.info("HANDLE IMAGE CALL")
+  def handle_cast({:change_current_gif_index, username, offset}, state) do
+    Logger.info("CHANGING INDEX")
+    current_index = get_in(state, [username, :gif_index])
+    new_index = current_index + offset
+    state = put_in(state, [username, :gif_index], new_index)
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_call({:fetch_current_gif, username}, _from, state) do
+    Logger.info("FETCHING NEW GIF")
+    current_index = get_in(state, [username, :gif_index])
     links = get_in(state, [username, :links])
-    new_links = if (direction == "previous") do
-      Logger.info("PREVIOUSING")
-      {tail_tip, long_head} = List.pop_at(links, -1)
-      [tail_tip | long_head]
-    else
-      Logger.info("NEXTING")
-      {head, tail} = List.pop_at(links, 0)
-      List.insert_at(tail, -1, head)
-    end
-    new_image = Enum.fetch(new_links, 0)
-    state = put_in(state, [username, :links], new_links)
-    {:reply, new_image, state}
+    current_image = Enum.fetch(links, current_index)
+    {:reply, current_image, state}
   end
 
   def add_user(server, name) do
@@ -53,13 +53,24 @@ defmodule CardsWeb.Game do
     GenServer.cast(server, {:add, name})
   end
 
-  def add_image_links(server, username, links) do
+  def initialize_gif_deck(server, username, links) do
     Logger.info("ADDING IMAGES")
-    GenServer.cast(server, {:add_links, username, links})
+    GenServer.cast(server, {:load_gif_links, username, links})
   end
 
-  def fetch_image_from_state(server, username, direction) do
-    Logger.info("FETCHING IMAGE FROM STATE")
-    GenServer.call(server, {:fetch_link, username, direction})
+  def change_gif_index(server, username, "previous") do
+    Logger.info("FETCHING PREVIOUS IMAGE FROM STATE")
+    GenServer.cast(server, {:change_current_gif_index, username, -1})
+  end
+
+  def change_gif_index(server, username, "next") do
+    Logger.info("FETCHING NEXT IMAGE FROM STATE")
+    GenServer.cast(server, {:change_current_gif_index, username, 1})
+  end
+
+  def fetch_current_image(server, username) do
+    Logger.info("FETCHING CURRENT IMAGE FROM STATE")
+    {:ok, current_image} = GenServer.call(server, {:fetch_current_gif, username})
+    current_image
   end
 end
