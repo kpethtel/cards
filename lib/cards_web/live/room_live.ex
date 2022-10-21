@@ -29,10 +29,15 @@ defmodule CardsWeb.RoomLive do
   end
 
   @impl true
-  def handle_event("submit_message", %{"chat" => %{"message" => message}}, socket) do
-    message = %{uuid: UUID.uuid4(), content: message, username: socket.assigns.username}
-    CardsWeb.Endpoint.broadcast(socket.assigns.topic, "new-message", message)
-    {:noreply, assign(socket, message: "")}
+  def handle_event("submit_message", %{"chat" => %{"message" => incoming_message}}, socket) do
+    username = socket.assigns.username
+    outgoing_message = %{uuid: UUID.uuid4(), content: incoming_message, username: username}
+    CardsWeb.Endpoint.broadcast(socket.assigns.topic, "new_message", outgoing_message)
+    links = fetch_gifs(username, incoming_message)
+    links = Enum.shuffle(links)
+    CardsWeb.Game.initialize_gif_deck(:default, username, links)
+    first_url = CardsWeb.Game.fetch_current_image(:default, username)
+    {:noreply, assign(socket, message: "", image: first_url)}
   end
 
   @impl true
@@ -42,15 +47,10 @@ defmodule CardsWeb.RoomLive do
   end
 
   @impl true
-  def handle_info(%{event: "new-message", payload: message}, socket) do
+  def handle_info(%{event: "new_message", payload: message}, socket) do
     Logger.info("HANDLING INFO")
     Logger.info(payload: message)
-    username = socket.assigns.username
-    links = fetch_gifs(username, message[:content])
-    links = Enum.shuffle(links)
-    CardsWeb.Game.initialize_gif_deck(:default, username, links)
-    first_url = CardsWeb.Game.fetch_current_image(:default, username)
-    {:noreply, assign(socket, messages: [message], image: first_url)}
+    {:noreply, assign(socket, messages: [message])}
   end
 
   @impl true
