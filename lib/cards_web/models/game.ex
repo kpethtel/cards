@@ -48,6 +48,13 @@ defmodule CardsWeb.Game do
     {:reply, current_image, state}
   end
 
+  @impl true
+  def handle_call({:fetch_current_index, username}, _from, state) do
+    Logger.info("FETCHING INDEX")
+    current_index = get_in(state, [username, :gif_index])
+    {:reply, current_index, state}
+  end
+
   def add_user(server, name) do
     Logger.info("ADDING USER")
     GenServer.cast(server, {:add, name})
@@ -72,5 +79,12 @@ defmodule CardsWeb.Game do
     Logger.info("FETCHING CURRENT IMAGE FROM STATE")
     {:ok, current_image} = GenServer.call(server, {:fetch_current_gif, username})
     current_image
+  end
+
+  def previous_gif_exists?(server, username) do
+    Logger.info("DOES A PREVIOUS GIF EXIST?")
+    current_index = GenServer.call(server, {:fetch_current_index, username})
+    IO.inspect(current_index)
+    current_index > 0
   end
 end

@@ -24,6 +24,8 @@ defmodule CardsWeb.RoomLive do
       message_list: [],
       user_list: [],
       image: "",
+      next_button_visible: false,
+      previous_button_visible: false,
       temporary_assigns: [message_list: [], image: ""]
     )}
   end
@@ -37,7 +39,7 @@ defmodule CardsWeb.RoomLive do
     links = Enum.shuffle(links)
     CardsWeb.Game.initialize_gif_deck(:default, username, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, username)
-    {:noreply, assign(socket, message_input: "", image: first_url)}
+    {:noreply, assign(socket, message_input: "", image: first_url, next_button_visible: true)}
   end
 
   @impl true
@@ -76,7 +78,8 @@ defmodule CardsWeb.RoomLive do
     username = socket.assigns.username
     CardsWeb.Game.change_gif_index(:default, username, "previous")
     new_gif = CardsWeb.Game.fetch_current_image(:default, username)
-    {:noreply, assign(socket, image: new_gif)}
+    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, username)
+    {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
   end
 
   @impl true
@@ -84,7 +87,8 @@ defmodule CardsWeb.RoomLive do
     username = socket.assigns.username
     CardsWeb.Game.change_gif_index(:default, username, "next")
     new_gif = CardsWeb.Game.fetch_current_image(:default, username)
-    {:noreply, assign(socket, image: new_gif)}
+    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, username)
+    {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
   end
 
   def display_message(assigns = %{type: :system, uuid: uuid, content: message}) do
