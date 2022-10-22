@@ -14,7 +14,7 @@
       <% end %>
     </div>
     <div id="chat-messages" phx-update="append">
-      <%= for message <- @messages do %>
+      <%= for message <- @message_list do %>
         <%= display_message(message) %>
       <% end %>
     </div>
@@ -22,5 +22,5 @@
 </div>
 
 <form multipart phx-submit="submit_message" phx-change="form_update">
-  <input type="text" name="chat[message]" value={@message} placeholder="Enter your message...">
+  <input type="text" name="chat[message]" value={@message_input} placeholder="Enter your message...">
 </form>

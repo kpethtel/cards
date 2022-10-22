@@ -20,37 +20,35 @@ defmodule CardsWeb.RoomLive do
       room_id: room_id,
       topic: topic,
       username: username,
-      message: "",
-      messages: [],
+      message_input: "",
+      message_list: [],
       user_list: [],
       image: "",
-      temporary_assigns: [messages: [], image: ""]
+      temporary_assigns: [message_list: [], image: ""]
     )}
   end
 
   @impl true
-  def handle_event("submit_message", %{"chat" => %{"message" => incoming_message}}, socket) do
+  def handle_event("submit_message", %{"chat" => %{"message" => message_input}}, socket) do
     username = socket.assigns.username
-    outgoing_message = %{uuid: UUID.uuid4(), content: incoming_message, username: username}
-    CardsWeb.Endpoint.broadcast(socket.assigns.topic, "new_message", outgoing_message)
-    links = fetch_gifs(username, incoming_message)
+    message_data = %{uuid: UUID.uuid4(), content: message_input, username: username}
+    CardsWeb.Endpoint.broadcast(socket.assigns.topic, "add_new_message", message_data)
+    links = fetch_gifs(username, message_input)
     links = Enum.shuffle(links)
     CardsWeb.Game.initialize_gif_deck(:default, username, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, username)
-    {:noreply, assign(socket, message: "", image: first_url)}
+    {:noreply, assign(socket, message_input: "", image: first_url)}
   end
 
   @impl true
-  def handle_event("form_update", %{"chat" => %{"message" => message}}, socket) do
-    Logger.info(message: message)
-    {:noreply, assign(socket, message: message)}
+  def handle_event("form_update", %{"chat" => %{"message" => message_input}}, socket) do
+    Logger.info(message_input: message_input)
+    {:noreply, assign(socket, message_input: message_input)}
   end
 
   @impl true
-  def handle_info(%{event: "new_message", payload: message}, socket) do
-    Logger.info("HANDLING INFO")
-    Logger.info(payload: message)
-    {:noreply, assign(socket, messages: [message])}
+  def handle_info(%{event: "add_new_message", payload: message_data}, socket) do
+    {:noreply, assign(socket, message_list: [message_data])}
   end
 
   @impl true
@@ -70,12 +68,11 @@ defmodule CardsWeb.RoomLive do
     user_list = CardsWeb.Presence.list(socket.assigns.topic)
     |> Map.keys()
 
-    {:noreply, assign(socket, messages: join_messages ++ leave_messages, user_list: user_list)}
+    {:noreply, assign(socket, message_list: join_messages ++ leave_messages, user_list: user_list)}
   end
 
   @impl true
   def handle_event("change_image", %{"direction" => "previous"}, socket) do
-    Logger.info("PREVIOUS")
     username = socket.assigns.username
     CardsWeb.Game.change_gif_index(:default, username, "previous")
     new_gif = CardsWeb.Game.fetch_current_image(:default, username)
@@ -84,32 +81,29 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("change_image", %{"direction" => "next"}, socket) do
-    Logger.info("NEXT")
     username = socket.assigns.username
     CardsWeb.Game.change_gif_index(:default, username, "next")
     new_gif = CardsWeb.Game.fetch_current_image(:default, username)
     {:noreply, assign(socket, image: new_gif)}
   end
 
-  def display_message(assigns = %{type: :system, uuid: uuid, content: content}) do
-    Logger.info("DISPLAY SYSTEM " <> uuid)
+  def display_message(assigns = %{type: :system, uuid: uuid, content: message}) do
     ~H"""
-    <p id={uuid}><em><%= content %></em></p>
+    <p id={uuid}><em><%= message %></em></p>
     """
   end
 
-  def display_message(assigns = %{uuid: uuid, content: content, username: username}) do
-    Logger.info("DISPLAY CONTENT " <> uuid)
+  def display_message(assigns = %{uuid: uuid, content: message, username: username}) do
     ~H"""
-    <p id={uuid}><strong> <%= username %> </strong>: <%= content %></p>
+    <p id={uuid}><strong> <%= username %> </strong>: <%= message %></p>
     """
   end
 
-  def fetch_gifs(username, message) do
-    encoded_message = URI.encode(message)
+  def fetch_gifs(username, search_term) do
+    search_term = URI.encode(search_term)
     giphy_base_url = Application.get_env(:cards, :base_url)
     giphy_api_key = Application.get_env(:cards, :api_key)
-    url = giphy_base_url <> "?" <> "api_key=" <> giphy_api_key <> "&q=" <> encoded_message <> "&limit=10"
+    url = giphy_base_url <> "?" <> "api_key=" <> giphy_api_key <> "&q=" <> search_term <> "&limit=10"
     response = HTTPoison.get!(url)
     decoded = Poison.decode!(response.body)
     data = decoded["data"]
