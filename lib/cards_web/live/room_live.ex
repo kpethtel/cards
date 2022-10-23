@@ -29,7 +29,7 @@ defmodule CardsWeb.RoomLive do
       next_button_visible: false,
       previous_button_visible: false,
       question: question,
-      temporary_assigns: [message_list: [], image: ""]
+      temporary_assigns: [message_list: []]
     )}
   end
 

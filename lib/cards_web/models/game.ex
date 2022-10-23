@@ -31,6 +31,7 @@ defmodule CardsWeb.Game do
   def handle_cast({:load_gif_links, username, links}, state) do
     Logger.info("ADDING LINKS TO STATE")
     state = put_in(state, [username, :links], links)
+    state = put_in(state, [username, :gif_index], 0)
     {:noreply, state}
   end
 
