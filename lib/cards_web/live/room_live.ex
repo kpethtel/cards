@@ -14,6 +14,8 @@ defmodule CardsWeb.RoomLive do
       CardsWeb.Game.add_user(:default, username)
     end
 
+    question = CardsWeb.Game.get_question(:default)
+
     {:ok,
     assign(
       socket,
@@ -26,6 +28,7 @@ defmodule CardsWeb.RoomLive do
       image: "",
       next_button_visible: false,
       previous_button_visible: false,
+      question: question,
       temporary_assigns: [message_list: [], image: ""]
     )}
   end

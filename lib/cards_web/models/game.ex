@@ -2,6 +2,10 @@ defmodule CardsWeb.Game do
   use GenServer
   require Logger
 
+  @questions [
+    "Where do you see yourself in five years?"
+  ]
+
   def start_link(name: name) do
     Logger.info("received name: #{name}")
     GenServer.start_link(__MODULE__, %{}, name: name)
@@ -58,6 +62,10 @@ defmodule CardsWeb.Game do
   def add_user(server, name) do
     Logger.info("ADDING USER")
     GenServer.cast(server, {:add, name})
+  end
+
+  def get_question(server) do
+    Enum.random(@questions)
   end
 
   def initialize_gif_deck(server, username, links) do
