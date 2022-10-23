@@ -74,6 +74,20 @@ button {
   display: none;
 }
 
+#text-input-area {
+  display: flex;
+}
+
+#text-input-area label {
+  align-items: center;
+  border: 1px solid #08402c;
+  border-radius: 3px;
+  display: flex;
+  height: 38px;
+  justify-content: center;
+  width: 100px;
+}
+
 /* Alerts and form errors used by phx.new */
 .alert {
   padding: 15px;

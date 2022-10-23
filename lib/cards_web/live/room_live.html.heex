@@ -23,6 +23,7 @@
   </div>
 </div>
 
-<form multipart phx-submit="submit_message" phx-change="form_update">
+<form multipart id="text-input-area" phx-submit="submit_message" phx-change="form_update">
+  <label>Search</label>
   <input type="text" name="chat[message]" value={@message_input} placeholder="Enter your message...">
 </form>
