@@ -2,25 +2,32 @@
 @import "./phoenix.css";
 
 #room-container {
+  border: 1px solid #08402c;
   display: flex;
-  justify-content:  space-between;
-  height: 500px;
+  height: 550px;
 }
 
 #game-board {
-  border: 1px solid #08402c;
+  border-right: 1px solid #08402c;
   float: left;
   width: 70%;
 }
 
-img{
+#image-area {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  height: 505px;
+}
+
+img {
   max-width: 100%;
   max-height: 100%;
   display: block;
+  object-fit: contain;
 }
 
 #chat-messages {
-  border: 1px solid #08402c;
   height: 100%;
   padding: 1em;
   padding: .2em .5em;
@@ -39,7 +46,7 @@ img{
 }
 
 #user-list {
-  border: 1px solid #08402c;
+  border-bottom: 1px solid #08402c;
   padding: .2em .5em;
 }
 
@@ -49,6 +56,18 @@ img{
 
 #user-list h3 {
   margin: 0;
+}
+
+button {
+  margin: 3px;
+}
+
+#button-previous {
+  float: left;
+}
+
+#button-next {
+  float: right;
 }
 
 .hidden {

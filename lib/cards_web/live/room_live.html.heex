@@ -2,9 +2,11 @@
 
 <div id="room-container">
   <div id="game-board">
-    <img src={@image}>
-    <button id="previous-button" class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
-    <button id="next-button" class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+    <div id="image-area">
+      <img src={@image}>
+    </div>
+    <button id="button-previous" class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
+    <button id="button-next" class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
   </div>
   <div id="chat-column">
     <div id="user-list">
