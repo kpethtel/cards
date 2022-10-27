@@ -1,14 +1,18 @@
 /* This file is for your main application CSS */
 @import "./phoenix.css";
 
+#banner {
+  background-color: darkslategray;
+}
+
 #room-container {
-  border: 1px solid #08402c;
+  border: 1px solid black;
   display: flex;
   height: 550px;
 }
 
 #game-board {
-  border-right: 1px solid #08402c;
+  border-right: 1px solid black;
   float: left;
   width: 70%;
 }
@@ -46,7 +50,7 @@ img {
 }
 
 #user-list {
-  border-bottom: 1px solid #08402c;
+  border-bottom: 1px solid black;
   padding: .2em .5em;
 }
 
@@ -58,7 +62,7 @@ img {
   margin: 0;
 }
 
-button {
+#image-area button {
   margin: 3px;
 }
 
@@ -80,7 +84,7 @@ button {
 
 #text-input-area label {
   align-items: center;
-  border: 1px solid #08402c;
+  border: 1px solid black;
   border-radius: 3px;
   display: flex;
   height: 38px;

@@ -17,7 +17,10 @@ h5{font-size: 1.6rem; letter-spacing: 0; line-height: 1.4}
 h6{font-size: 1.4rem; letter-spacing: 0; line-height: 1.2}
 pre{padding: 1em;}
 
-.container{
+body {
+  background-color: rgb(25, 94, 94);
+}
+.banner{
   margin: 0 auto;
   max-width: 80.0rem;
   padding: 0 2.0rem;
@@ -55,8 +58,6 @@ select {
 /* Headers */
 header {
   width: 100%;
-  background: #fdfdfd;
-  border-bottom: 1px solid #eaeaea;
   margin-bottom: 2rem;
 }
 header section {
@@ -88,9 +89,6 @@ header nav a {
 }
 
 @media (min-width: 40.0rem) { /* Small devices (landscape phones, 576px and up) */
-  header section {
-    flex-direction: row;
-  }
   header nav ul {
     margin: 1rem;
   }
