@@ -41,7 +41,7 @@ defmodule CardsWeb.RoomLive do
     links = Enum.shuffle(links)
     CardsWeb.Game.initialize_gif_deck(:default, username, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, username)
-    {:noreply, assign(socket, image: first_url, next_button_visible: true)}
+    {:noreply, assign(socket, image: first_url, previous_button_visible: false, next_button_visible: true)}
   end
 
   @impl true
@@ -109,10 +109,4 @@ defmodule CardsWeb.RoomLive do
     data = decoded["data"]
     Enum.map(data, fn x -> get_in(x, ["images", "original", "url"]) end)
   end
-
-  # def toggle_input_type(js \\ %JS{}) do
-  #   js
-  #   |> JS.hide(transition: "fade-out", to: "#modal")
-  #   |> JS.hide(transition: "fade-out-scale", to: "#modal-content")
-  # end
 end
