@@ -22,7 +22,6 @@ defmodule CardsWeb.RoomLive do
       room_id: room_id,
       topic: topic,
       username: username,
-      message_input: "",
       message_list: [],
       user_list: [],
       image: "",
@@ -42,13 +41,7 @@ defmodule CardsWeb.RoomLive do
     links = Enum.shuffle(links)
     CardsWeb.Game.initialize_gif_deck(:default, username, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, username)
-    {:noreply, assign(socket, message_input: "", image: first_url, next_button_visible: true)}
-  end
-
-  @impl true
-  def handle_event("form_update", %{"chat" => %{"message" => message_input}}, socket) do
-    Logger.info(message_input: message_input)
-    {:noreply, assign(socket, message_input: message_input)}
+    {:noreply, assign(socket, image: first_url, next_button_visible: true)}
   end
 
   @impl true
@@ -116,4 +109,10 @@ defmodule CardsWeb.RoomLive do
     data = decoded["data"]
     Enum.map(data, fn x -> get_in(x, ["images", "original", "url"]) end)
   end
+
+  # def toggle_input_type(js \\ %JS{}) do
+  #   js
+  #   |> JS.hide(transition: "fade-out", to: "#modal")
+  #   |> JS.hide(transition: "fade-out-scale", to: "#modal-content")
+  # end
 end
