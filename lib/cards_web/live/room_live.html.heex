@@ -23,7 +23,7 @@
   </div>
 </div>
 
-<form multipart id="text-input-area" phx-submit="submit_message">
-  <label>Search</label>
+<form multipart id="text-input-area" phx-submit="submit_chat_message" phx-hook="InputTypeToggleListener">
+  <label id="input-type-toggle">Chat</label>
   <input type="text" name="chat[message]" placeholder="Enter your message...">
 </form>

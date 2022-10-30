@@ -88,6 +88,11 @@ img {
   width: 100px;
 }
 
+#input-type-toggle {
+  background: lightblue;
+  min-width: 115px;
+}
+
 /* Alerts and form errors used by phx.new */
 .alert {
   padding: 15px;

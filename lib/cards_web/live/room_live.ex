@@ -33,11 +33,15 @@ defmodule CardsWeb.RoomLive do
   end
 
   @impl true
-  def handle_event("submit_message", %{"chat" => %{"message" => message_input}}, socket) do
-    username = socket.assigns.username
-    message_data = %{uuid: UUID.uuid4(), content: message_input, username: username}
+  def handle_event("submit_chat_message", %{"chat" => %{"message" => message_input}}, socket) do
+    message_data = %{uuid: UUID.uuid4(), content: message_input, username: socket.assigns.username}
     CardsWeb.Endpoint.broadcast(socket.assigns.topic, "add_new_message", message_data)
-    links = fetch_gifs(username, message_input)
+    {:noreply, socket}
+  end
+
+  def handle_event("submit_search_query", %{"chat" => %{"message" => search_query}}, socket) do
+    username = socket.assigns.username
+    links = fetch_gifs(username, search_query)
     links = Enum.shuffle(links)
     CardsWeb.Game.initialize_gif_deck(:default, username, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, username)
