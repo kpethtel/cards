@@ -74,18 +74,9 @@ defmodule CardsWeb.RoomLive do
   end
 
   @impl true
-  def handle_event("change_image", %{"direction" => "previous"}, socket) do
+  def handle_event("change_image", %{"direction" => direction}, socket) do
     username = socket.assigns.username
-    CardsWeb.Game.change_gif_index(:default, username, "previous")
-    new_gif = CardsWeb.Game.fetch_current_image(:default, username)
-    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, username)
-    {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
-  end
-
-  @impl true
-  def handle_event("change_image", %{"direction" => "next"}, socket) do
-    username = socket.assigns.username
-    CardsWeb.Game.change_gif_index(:default, username, "next")
+    CardsWeb.Game.change_gif_index(:default, username, direction)
     new_gif = CardsWeb.Game.fetch_current_image(:default, username)
     previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, username)
     {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
