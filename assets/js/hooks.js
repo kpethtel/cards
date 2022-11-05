@@ -1,7 +1,7 @@
-import InputTypeToggleListener from "./hooks/inputTypeToggleListener";
+import TextInputListeners from "./hooks/textInputListeners";
 
 let Hooks = {
-  InputTypeToggleListener: InputTypeToggleListener
+  TextInputListeners: TextInputListeners
 }
 
 export default Hooks;

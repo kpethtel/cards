@@ -1,8 +1,11 @@
-const InputTypeToggleListener = {
+const TextInputListeners = {
   mounted() {
     this.el.addEventListener("keyup", (event) => {
       if (event.key === "Escape" || event.key === "Esc") {
         toggleInputMode();
+      } else if (event.key === "Enter") {
+        var textInput = document.getElementById("text-input");
+        textInput.value = '';
       }
     });
     document.getElementById('input-type-toggle').addEventListener('click', toggleInputMode);
@@ -24,4 +27,4 @@ const toggleInputMode = () => {
   }
 }
 
-export default InputTypeToggleListener;
+export default TextInputListeners;
