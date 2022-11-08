@@ -3,7 +3,11 @@ defmodule CardsWeb.Game do
   require Logger
 
   @questions [
-    "Where do you see yourself in five years?"
+    "Where do you see yourself in five years?",
+    "What's your greatest weakness?",
+    "What's your greatest strength?",
+    "How would you describe your work style?",
+    "What is your spirit animal?"
   ]
 
   def start_link(name: name) do
