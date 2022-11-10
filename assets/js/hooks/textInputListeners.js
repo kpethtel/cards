@@ -8,6 +8,13 @@ const TextInputListeners = {
         textInput.value = '';
       }
     });
+    this.el.addEventListener("keydown", (event) => {
+      if (event.metaKey && event.code === "ArrowLeft") {
+        this.pushEvent("change_image", {"direction": "previous"})
+      } else if (event.metaKey && event.code === "ArrowRight") {
+        this.pushEvent("change_image", {"direction": "next"})
+      }
+    });
     document.getElementById('input-type-toggle').addEventListener('click', toggleInputMode);
   }
 }
