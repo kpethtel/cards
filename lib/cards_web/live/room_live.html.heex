@@ -5,8 +5,17 @@
     <div id="image-area">
       <img src={@image}>
     </div>
-    <button id="button-previous" class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
-    <button id="button-next" class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+    <div id="image-navigation-controls">
+      <div class="button-area">
+        <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
+      </div>
+      <div class="button-area">
+        <button class={if !@next_button_visible, do: "hidden"} phx-click="submit-answer">Select</button>
+      </div>
+      <div class="button-area">
+        <button class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+      </div>
+    </div>
   </div>
   <div id="chat-column">
     <div id="user-list">
