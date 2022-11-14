@@ -25,7 +25,7 @@ defmodule CardsWeb.Game do
     Logger.info("ADDING USER TO STATE")
     Logger.info("name #{name}")
 
-    state = Map.put(state, name, %{links: [], gif_index: 0})
+    state = Map.put(state, name, %{links: [], gif_index: 0, status: nil})
     Logger.info("STATE")
     Logger.info(state)
     {:noreply, state}
@@ -45,6 +45,13 @@ defmodule CardsWeb.Game do
     current_index = get_in(state, [username, :gif_index])
     new_index = current_index + offset
     state = put_in(state, [username, :gif_index], new_index)
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_cast({:select_answer, username}, state) do
+    Logger.info("SELECTING ANSWER")
+    state = put_in(state, [username, :status], "submitted")
     {:noreply, state}
   end
 
@@ -99,5 +106,10 @@ defmodule CardsWeb.Game do
     current_index = GenServer.call(server, {:fetch_current_index, username})
     IO.inspect(current_index)
     current_index > 0
+  end
+
+  def select_answer(server, username) do
+    Logger.info("SELECTING ANSWER")
+    current_index = GenServer.cast(server, {:select_answer, username})
   end
 end

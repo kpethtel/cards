@@ -27,6 +27,7 @@ defmodule CardsWeb.RoomLive do
       image: "",
       next_button_visible: false,
       previous_button_visible: false,
+      submitted: false,
       question: question,
       temporary_assigns: [message_list: []]
     )}
@@ -39,6 +40,7 @@ defmodule CardsWeb.RoomLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("submit_search_query", %{"chat" => %{"message" => search_query}}, socket) do
     username = socket.assigns.username
     links = fetch_gifs(username, search_query)
@@ -46,6 +48,22 @@ defmodule CardsWeb.RoomLive do
     CardsWeb.Game.initialize_gif_deck(:default, username, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, username)
     {:noreply, assign(socket, image: first_url, previous_button_visible: false, next_button_visible: true)}
+  end
+
+  @impl true
+  def handle_event("change_image", %{"direction" => direction}, socket) do
+    username = socket.assigns.username
+    CardsWeb.Game.change_gif_index(:default, username, direction)
+    new_gif = CardsWeb.Game.fetch_current_image(:default, username)
+    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, username)
+    {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
+  end
+
+  @impl true
+  def handle_event("select_answer", _value, socket) do
+    username = socket.assigns.username
+    CardsWeb.Game.select_answer(:default, username)
+    {:noreply, assign(socket, previous_button_visible: false, next_button_visible: false, submitted: true)}
   end
 
   @impl true
@@ -71,15 +89,6 @@ defmodule CardsWeb.RoomLive do
     |> Map.keys()
 
     {:noreply, assign(socket, message_list: join_messages ++ leave_messages, user_list: user_list)}
-  end
-
-  @impl true
-  def handle_event("change_image", %{"direction" => direction}, socket) do
-    username = socket.assigns.username
-    CardsWeb.Game.change_gif_index(:default, username, direction)
-    new_gif = CardsWeb.Game.fetch_current_image(:default, username)
-    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, username)
-    {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
   end
 
   def display_message(assigns = %{type: :system, uuid: uuid, content: message}) do
