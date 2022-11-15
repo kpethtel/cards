@@ -13,6 +13,8 @@ const TextInputListeners = {
         this.pushEvent("change_image", {"direction": "previous"})
       } else if (event.metaKey && event.code === "ArrowRight") {
         this.pushEvent("change_image", {"direction": "next"})
+      } else if (event.ctrlKey && event.code === "Enter") {
+        this.pushEvent("select_answer")
       }
     });
     document.getElementById('input-type-toggle').addEventListener('click', toggleInputMode);
