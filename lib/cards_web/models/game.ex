@@ -49,10 +49,10 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
-  def handle_cast({:select_answer, username}, state) do
-    Logger.info("SELECTING ANSWER")
+  def handle_call({:select_answer, username}, _from, state) do
     state = put_in(state, [username, :status], "submitted")
-    {:noreply, state}
+    all_submitted = Enum.all?(state, fn({_, value}) -> Map.fetch!(value, :status) == "submitted" end)
+    {:reply, all_submitted, state}
   end
 
   @impl true
@@ -60,7 +60,7 @@ defmodule CardsWeb.Game do
     Logger.info("FETCHING NEW GIF")
     current_index = get_in(state, [username, :gif_index])
     links = get_in(state, [username, :links])
-    current_image = Enum.fetch(links, current_index)
+    {:ok, current_image} = Enum.fetch(links, current_index)
     {:reply, current_image, state}
   end
 
@@ -76,7 +76,7 @@ defmodule CardsWeb.Game do
     GenServer.cast(server, {:add, name})
   end
 
-  def get_question(server) do
+  def get_question(_server) do
     Enum.random(@questions)
   end
 
@@ -97,8 +97,7 @@ defmodule CardsWeb.Game do
 
   def fetch_current_image(server, username) do
     Logger.info("FETCHING CURRENT IMAGE FROM STATE")
-    {:ok, current_image} = GenServer.call(server, {:fetch_current_gif, username})
-    current_image
+    GenServer.call(server, {:fetch_current_gif, username})
   end
 
   def previous_gif_exists?(server, username) do
@@ -110,6 +109,6 @@ defmodule CardsWeb.Game do
 
   def select_answer(server, username) do
     Logger.info("SELECTING ANSWER")
-    current_index = GenServer.cast(server, {:select_answer, username})
+    GenServer.call(server, {:select_answer, username})
   end
 end

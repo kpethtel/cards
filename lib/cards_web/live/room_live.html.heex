@@ -3,7 +3,11 @@
 <div id="room-container">
   <div id="game-board">
     <div id="image-area">
-      <img src={@image}>
+      <%= if @phase == "submission" do %>
+        <img src={@image}>
+      <%= else %>
+        Let's vote
+      <% end %>
     </div>
     <%= if @submitted do %>
       <p>Waiting on other submissions</p>
