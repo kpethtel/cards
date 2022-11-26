@@ -17,14 +17,20 @@
   align-items: center;
   display: flex;
   justify-content: center;
-  height: 505px;
+  height: 480px;
 }
 
-img {
+#image-area img {
   max-width: 100%;
   max-height: 100%;
   display: block;
   object-fit: contain;
+}
+
+#action-prompt p {
+  font-weight: bold;;
+  margin-bottom: 0px;
+  text-align: center;
 }
 
 #chat-messages {
@@ -60,6 +66,7 @@ img {
 
 #image-navigation-controls {
   display: flex;
+  height: 38px;
   justify-content: space-between;
 }
 

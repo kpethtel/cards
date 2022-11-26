@@ -24,12 +24,12 @@ defmodule CardsWeb.RoomLive do
       username: username,
       message_list: [],
       user_list: [],
-      image: "",
+      image: nil,
       next_button_visible: false,
       previous_button_visible: false,
-      submitted: false,
       question: question,
       phase: "submission",
+      prompt: "Search for an appropriate answer to the question",
       temporary_assigns: [message_list: []]
     )}
   end
@@ -65,7 +65,7 @@ defmodule CardsWeb.RoomLive do
     username = socket.assigns.username
     ready_for_vote = CardsWeb.Game.select_answer(:default, username)
     phase = if ready_for_vote, do: "voting", else: "submission"
-    {:noreply, assign(socket, previous_button_visible: false, next_button_visible: false, submitted: true, phase: phase)}
+    {:noreply, assign(socket, previous_button_visible: false, next_button_visible: false, phase: phase, prompt: "Waiting on voting round")}
   end
 
   @impl true
