@@ -29,7 +29,7 @@
         <p><%= user %></p>
       <% end %>
     </div>
-    <div id="chat-messages" phx-update="append">
+    <div id="chat-messages" phx-update="prepend">
       <%= for message <- @message_list do %>
         <%= display_message(message) %>
       <% end %>

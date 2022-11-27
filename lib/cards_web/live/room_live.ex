@@ -95,13 +95,13 @@ defmodule CardsWeb.RoomLive do
 
   def display_message(assigns = %{type: :system, uuid: uuid, content: message}) do
     ~H"""
-    <p id={uuid}><em><%= message %></em></p>
+    <li id={uuid}><em><%= message %></em></li>
     """
   end
 
   def display_message(assigns = %{uuid: uuid, content: message, username: username}) do
     ~H"""
-    <p id={uuid}><strong> <%= username %> </strong>: <%= message %></p>
+    <li id={uuid}><strong> <%= username %> </strong>: <%= message %></li>
     """
   end
 
