@@ -17,6 +17,7 @@ defmodule CardsWeb.Game do
 
   @impl true
   def init(state) do
+    state = Map.put(state, :phase, "submission")
     {:ok, state}
   end
 
@@ -49,10 +50,9 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
-  def handle_call({:select_answer, username}, _from, state) do
+  def handle_cast({:select_answer, username}, state) do
     state = put_in(state, [username, :status], "submitted")
-    all_submitted = Enum.all?(state, fn({_, value}) -> Map.fetch!(value, :status) == "submitted" end)
-    {:reply, all_submitted, state}
+    {:noreply, state}
   end
 
   @impl true
@@ -71,6 +71,13 @@ defmodule CardsWeb.Game do
     {:reply, current_index, state}
   end
 
+  @impl true
+  def handle_call(:fetch_current_phase, _from, state) do
+    Logger.info("FETCHING PHASE")
+    phase = get_in(state, [:phase])
+    {:reply, phase, state}
+  end
+
   def add_user(server, name) do
     Logger.info("ADDING USER")
     GenServer.cast(server, {:add, name})
@@ -78,6 +85,11 @@ defmodule CardsWeb.Game do
 
   def get_question(_server) do
     Enum.random(@questions)
+  end
+
+  def get_phase(server) do
+    Logger.info("GET PHASE")
+    GenServer.call(server, :fetch_current_phase)
   end
 
   def initialize_gif_deck(server, username, links) do
@@ -109,6 +121,6 @@ defmodule CardsWeb.Game do
 
   def select_answer(server, username) do
     Logger.info("SELECTING ANSWER")
-    GenServer.call(server, {:select_answer, username})
+    GenServer.cast(server, {:select_answer, username})
   end
 end
