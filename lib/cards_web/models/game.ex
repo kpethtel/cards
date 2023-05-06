@@ -17,8 +17,11 @@ defmodule CardsWeb.Game do
 
   @impl true
   def init(state) do
-    state = Map.put(state, :phase, "submission")
-    state = Map.put(state, :users, %{})
+    state = put_in(state, [:phase], "submission")
+    state = put_in(state, [:users], %{})
+    question = Enum.random(@questions)
+    state = put_in(state, [:question], question)
+
     {:ok, state}
   end
 
@@ -73,6 +76,13 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
+  def handle_call(:fetch_current_question, _from, state) do
+    Logger.info("FETCHING question")
+    question = get_in(state, [:question])
+    {:reply, question, state}
+  end
+
+  @impl true
   def handle_call(:fetch_current_phase, _from, state) do
     Logger.info("FETCHING PHASE")
     phase = get_in(state, [:phase])
@@ -84,8 +94,8 @@ defmodule CardsWeb.Game do
     GenServer.cast(server, {:add, name})
   end
 
-  def get_question(_server) do
-    Enum.random(@questions)
+  def get_question(server) do
+    GenServer.call(server, :fetch_current_question)
   end
 
   def get_phase(server) do
