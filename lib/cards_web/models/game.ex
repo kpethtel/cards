@@ -54,7 +54,7 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
-  def handle_cast({:select_answer, username}, state) do
+  def handle_cast({:submit_answer, username}, state) do
     state = put_in(state, [:users, username, :status], "submitted")
     {:noreply, state}
   end
@@ -86,7 +86,24 @@ defmodule CardsWeb.Game do
   def handle_call(:fetch_current_phase, _from, state) do
     Logger.info("FETCHING PHASE")
     phase = get_in(state, [:phase])
-    {:reply, phase, state}
+    new_phase = case phase do
+      "submission" ->
+        users = get_in(state, [:users])
+        all_submitted = Enum.all?(users, fn({_, value}) -> Map.fetch!(value, :status) == "submitted" end)
+        Logger.info("all submitted is #{all_submitted}")
+        if all_submitted, do: "voting", else: "submission"
+      "voting" ->
+        users = get_in(state, [:users])
+        all_voted = Enum.all?(users, fn({_, value}) -> Map.fetch!(value, :status) == "voted" end)
+        if all_voted, do: "result", else: "voting"
+      "result" ->
+        "temp_value"
+    end
+    if phase != new_phase do
+      put_in(state, [:phase], new_phase)
+    end
+
+    {:reply, new_phase, state}
   end
 
   def add_user(server, name) do
@@ -130,8 +147,9 @@ defmodule CardsWeb.Game do
     current_index > 0
   end
 
-  def select_answer(server, username) do
+  def submit_answer(server, username) do
     Logger.info("SELECTING ANSWER")
-    GenServer.cast(server, {:select_answer, username})
+    GenServer.cast(server, {:submit_answer, username})
+    GenServer.call(server, :fetch_current_phase)
   end
 end

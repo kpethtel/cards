@@ -64,8 +64,17 @@ defmodule CardsWeb.RoomLive do
   @impl true
   def handle_event("select_answer", _value, socket) do
     username = socket.assigns.username
-    CardsWeb.Game.select_answer(:default, username)
+    next_phase = CardsWeb.Game.submit_answer(:default, username)
+    if next_phase == "voting" do
+      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "start_voting", nil)
+    end
+
     {:noreply, assign(socket, previous_button_visible: false, next_button_visible: false, prompt: "Waiting on voting round")}
+  end
+
+  @impl true
+  def handle_info(%{event: "start_voting"}, socket) do
+    {:noreply, assign(socket, prompt: "Vote on the winner", image: nil)}
   end
 
   @impl true

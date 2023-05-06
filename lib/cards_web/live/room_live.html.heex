@@ -3,7 +3,9 @@
 <div id="room-container">
   <div id="game-board">
     <div id="image-area">
-      <img src={@image}>
+      <%= if @phase == "submission" do %>
+        <img src={@image}>
+      <% end %>
     </div>
     <div id="image-navigation-controls">
       <%= if @image && @phase == "submission" do %>
