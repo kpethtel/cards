@@ -26,6 +26,7 @@ defmodule CardsWeb.RoomLive do
       message_list: [],
       user_list: [],
       image: nil,
+      candidates: [],
       next_button_visible: false,
       previous_button_visible: false,
       question: question,
@@ -74,7 +75,9 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_info(%{event: "start_voting"}, socket) do
-    {:noreply, assign(socket, prompt: "Vote on the winner", image: nil)}
+    candidates = CardsWeb.Game.fetch_candidates(:default)
+
+    {:noreply, assign(socket, prompt: "Vote on the winner", phase: "voting", image: nil, candidates: candidates)}
   end
 
   @impl true

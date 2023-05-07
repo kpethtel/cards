@@ -2,24 +2,31 @@
 
 <div id="room-container">
   <div id="game-board">
-    <div id="image-area">
-      <%= if @phase == "submission" do %>
-        <img src={@image}>
-      <% end %>
-    </div>
-    <div id="image-navigation-controls">
-      <%= if @image && @phase == "submission" do %>
-        <div class="button-area">
-          <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
+    <%= case @phase do %>
+      <% "submission" -> %>
+        <div id="image-area">
+            <img src={@image}>
         </div>
-        <div class="button-area">
-          <button phx-click="select_answer">Select</button>
+        <div id="image-navigation-controls">
+          <%= if @image && @phase == "submission" do %>
+            <div class="button-area">
+              <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
+            </div>
+            <div class="button-area">
+              <button phx-click="select_answer">Select</button>
+            </div>
+            <div class="button-area">
+              <button class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+            </div>
+          <% end %>
         </div>
-        <div class="button-area">
-          <button class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+      <% "voting" -> %>
+        <div id="image-area">
+          <%= for candidate <- @candidates do %>
+            <img src={candidate} >
+          <% end %>
         </div>
-      <% end %>
-    </div>
+    <% end %>
     <div id="action-prompt">
       <p><%= @prompt %></p>
     </div>

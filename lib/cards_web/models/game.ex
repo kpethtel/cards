@@ -7,7 +7,10 @@ defmodule CardsWeb.Game do
     "What's your greatest weakness?",
     "What's your greatest strength?",
     "How would you describe your work style?",
-    "What is your spirit animal?"
+    "What is your spirit animal?",
+    "Can you tell us about a time you made a mistake?",
+    "Can you tell us about an accomplishement you're proud of?",
+    "What do you enjoy most about your work?"
   ]
 
   def start_link(name: name) do
@@ -106,6 +109,18 @@ defmodule CardsWeb.Game do
     {:reply, new_phase, state}
   end
 
+  @imple true
+  def handle_call(:current_candidates, _from, state) do
+    users = get_in(state, [:users])
+    links = Enum.map(users, fn {user, user_data} ->
+      links = get_in(user_data, [:links])
+      index = get_in(user_data, [:gif_index])
+      {:ok, link} = Enum.fetch(links, index)
+      link
+    end)
+    {:reply, links, state}
+  end
+
   def add_user(server, name) do
     Logger.info("ADDING USER")
     GenServer.cast(server, {:add, name})
@@ -151,5 +166,10 @@ defmodule CardsWeb.Game do
     Logger.info("SELECTING ANSWER")
     GenServer.cast(server, {:submit_answer, username})
     GenServer.call(server, :fetch_current_phase)
+  end
+
+  def fetch_candidates(server) do
+    Logger.info("FETCHING CANDIDATES")
+    GenServer.call(server, :current_candidates)
   end
 end
