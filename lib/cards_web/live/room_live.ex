@@ -11,7 +11,7 @@ defmodule CardsWeb.RoomLive do
     if connected?(socket) do
       CardsWeb.Endpoint.subscribe(topic)
       CardsWeb.Presence.track(self(), topic, username, %{})
-      CardsWeb.Game.add_user(:default, username)
+      CardsWeb.Game.add_user(:default, socket.id, username)
     end
 
     question = CardsWeb.Game.get_question(:default)
@@ -38,34 +38,31 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("submit_chat_message", %{"text_input" => %{"message" => message_input}}, socket) do
-    message_data = %{uuid: UUID.uuid4(), content: message_input, username: socket.assigns.username}
+    message_data = %{uuid: UUID.uuid4(), content: message_input, username: socket.id}
     CardsWeb.Endpoint.broadcast(socket.assigns.topic, "add_new_message", message_data)
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("submit_search_query", %{"text_input" => %{"message" => search_query}}, socket) do
-    username = socket.assigns.username
-    links = fetch_gifs(username, search_query)
+    links = fetch_gifs(socket.id, search_query)
     links = Enum.shuffle(links)
-    CardsWeb.Game.initialize_gif_deck(:default, username, links)
-    first_url = CardsWeb.Game.fetch_current_image(:default, username)
+    CardsWeb.Game.initialize_gif_deck(:default, socket.id, links)
+    first_url = CardsWeb.Game.fetch_current_image(:default, socket.id)
     {:noreply, assign(socket, image: first_url, previous_button_visible: false, next_button_visible: true)}
   end
 
   @impl true
   def handle_event("change_image", %{"direction" => direction}, socket) do
-    username = socket.assigns.username
-    CardsWeb.Game.change_gif_index(:default, username, direction)
-    new_gif = CardsWeb.Game.fetch_current_image(:default, username)
-    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, username)
+    CardsWeb.Game.change_gif_index(:default, socket.id, direction)
+    new_gif = CardsWeb.Game.fetch_current_image(:default, socket.id)
+    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, socket.id)
     {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
   end
 
   @impl true
   def handle_event("select_answer", _value, socket) do
-    username = socket.assigns.username
-    next_phase = CardsWeb.Game.submit_answer(:default, username)
+    next_phase = CardsWeb.Game.submit_answer(:default, socket.id)
     if next_phase == "voting" do
       CardsWeb.Endpoint.broadcast(socket.assigns.topic, "start_voting", nil)
     end

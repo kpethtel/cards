@@ -29,52 +29,52 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
-  def handle_cast({:add, name}, state) do
+  def handle_cast({:add, user_id, name}, state) do
     Logger.info("ADDING USER TO STATE")
     Logger.info("name #{name}")
 
-    state = put_in(state, [:users, name], %{links: [], gif_index: 0, status: nil})
+    state = put_in(state, [:users, user_id], %{name: name, links: [], gif_index: 0, status: nil})
     Logger.info("STATE")
     Logger.info(state)
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:load_gif_links, username, links}, state) do
+  def handle_cast({:load_gif_links, socket_id, links}, state) do
     Logger.info("ADDING LINKS TO STATE")
-    state = put_in(state, [:users, username, :links], links)
-    state = put_in(state, [:users, username, :gif_index], 0)
+    state = put_in(state, [:users, socket_id, :links], links)
+    state = put_in(state, [:users, socket_id, :gif_index], 0)
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:change_current_gif_index, username, offset}, state) do
+  def handle_cast({:change_current_gif_index, socket_id, offset}, state) do
     Logger.info("CHANGING INDEX")
-    current_index = get_in(state, [:users, username, :gif_index])
+    current_index = get_in(state, [:users, socket_id, :gif_index])
     new_index = current_index + offset
-    state = put_in(state, [:users, username, :gif_index], new_index)
+    state = put_in(state, [:users, socket_id, :gif_index], new_index)
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:submit_answer, username}, state) do
-    state = put_in(state, [:users, username, :status], "submitted")
+  def handle_cast({:submit_answer, socket_id}, state) do
+    state = put_in(state, [:users, socket_id, :status], "submitted")
     {:noreply, state}
   end
 
   @impl true
-  def handle_call({:fetch_current_gif, username}, _from, state) do
+  def handle_call({:fetch_current_gif, socket_id}, _from, state) do
     Logger.info("FETCHING NEW GIF")
-    current_index = get_in(state, [:users, username, :gif_index])
-    links = get_in(state, [:users, username, :links])
+    current_index = get_in(state, [:users, socket_id, :gif_index])
+    links = get_in(state, [:users, socket_id, :links])
     {:ok, current_image} = Enum.fetch(links, current_index)
     {:reply, current_image, state}
   end
 
   @impl true
-  def handle_call({:fetch_current_index, username}, _from, state) do
+  def handle_call({:fetch_current_index, socket_id}, _from, state) do
     Logger.info("FETCHING INDEX")
-    current_index = get_in(state, [:users, username, :gif_index])
+    current_index = get_in(state, [:users, socket_id, :gif_index])
     {:reply, current_index, state}
   end
 
@@ -121,9 +121,9 @@ defmodule CardsWeb.Game do
     {:reply, links, state}
   end
 
-  def add_user(server, name) do
+  def add_user(server, user_id, name) do
     Logger.info("ADDING USER")
-    GenServer.cast(server, {:add, name})
+    GenServer.cast(server, {:add, user_id, name})
   end
 
   def get_question(server) do
@@ -135,36 +135,36 @@ defmodule CardsWeb.Game do
     GenServer.call(server, :fetch_current_phase)
   end
 
-  def initialize_gif_deck(server, username, links) do
+  def initialize_gif_deck(server, socket_id, links) do
     Logger.info("ADDING IMAGES")
-    GenServer.cast(server, {:load_gif_links, username, links})
+    GenServer.cast(server, {:load_gif_links, socket_id, links})
   end
 
-  def change_gif_index(server, username, "previous") do
+  def change_gif_index(server, socket_id, "previous") do
     Logger.info("FETCHING PREVIOUS IMAGE FROM STATE")
-    GenServer.cast(server, {:change_current_gif_index, username, -1})
+    GenServer.cast(server, {:change_current_gif_index, socket_id, -1})
   end
 
-  def change_gif_index(server, username, "next") do
+  def change_gif_index(server, socket_id, "next") do
     Logger.info("FETCHING NEXT IMAGE FROM STATE")
-    GenServer.cast(server, {:change_current_gif_index, username, 1})
+    GenServer.cast(server, {:change_current_gif_index, socket_id, 1})
   end
 
-  def fetch_current_image(server, username) do
+  def fetch_current_image(server, socket_id) do
     Logger.info("FETCHING CURRENT IMAGE FROM STATE")
-    GenServer.call(server, {:fetch_current_gif, username})
+    GenServer.call(server, {:fetch_current_gif, socket_id})
   end
 
-  def previous_gif_exists?(server, username) do
+  def previous_gif_exists?(server, socket_id) do
     Logger.info("DOES A PREVIOUS GIF EXIST?")
-    current_index = GenServer.call(server, {:fetch_current_index, username})
+    current_index = GenServer.call(server, {:fetch_current_index, socket_id})
     IO.inspect(current_index)
     current_index > 0
   end
 
-  def submit_answer(server, username) do
+  def submit_answer(server, socket_id) do
     Logger.info("SELECTING ANSWER")
-    GenServer.cast(server, {:submit_answer, username})
+    GenServer.cast(server, {:submit_answer, socket_id})
     GenServer.call(server, :fetch_current_phase)
   end
 
