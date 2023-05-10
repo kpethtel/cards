@@ -23,7 +23,7 @@
       <% "voting" -> %>
         <div id="image-area">
           <%= for candidate <- @candidates do %>
-            <img src={candidate} >
+            <img id={get_in(candidate, [:user_id])} src={get_in(candidate, [:link])} >
           <% end %>
         </div>
     <% end %>

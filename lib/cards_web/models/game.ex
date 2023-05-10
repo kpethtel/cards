@@ -116,7 +116,7 @@ defmodule CardsWeb.Game do
       links = get_in(user_data, [:links])
       index = get_in(user_data, [:gif_index])
       {:ok, link} = Enum.fetch(links, index)
-      link
+      %{user_id: user, link: link}
     end)
     {:reply, links, state}
   end
