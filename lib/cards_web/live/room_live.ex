@@ -71,10 +71,30 @@ defmodule CardsWeb.RoomLive do
   end
 
   @impl true
+  def handle_event("vote_for_winner", %{"selection" => selected_id}, socket) do
+    CardsWeb.Game.vote(:default, socket.id, selected_id)
+    next_phase = CardsWeb.Game.submit_answer(:default, socket.id)
+
+    if next_phase == "result" do
+      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "show_result", nil)
+    end
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info(%{event: "start_voting"}, socket) do
+    # might be better to pass this from the calling function
     candidates = CardsWeb.Game.fetch_candidates(:default)
 
     {:noreply, assign(socket, prompt: "Vote on the winner", phase: "voting", image: nil, candidates: candidates)}
+  end
+
+  @impl true
+  def handle_info(%{event: "show_result"}, socket) do
+    # might be better to pass this from the calling function
+    winner = CardsWeb.Game.fetch_winner(:default)
+
+    {:noreply, assign(socket, prompt: "Behold, the winner!", phase: "result", image: winner)}
   end
 
   @impl true

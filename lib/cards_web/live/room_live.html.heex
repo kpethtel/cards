@@ -23,8 +23,12 @@
       <% "voting" -> %>
         <div id="image-area">
           <%= for candidate <- @candidates do %>
-            <img id={get_in(candidate, [:user_id])} src={get_in(candidate, [:link])} >
+            <img id={get_in(candidate, [:user_id])} src={get_in(candidate, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(candidate, [:user_id])}>
           <% end %>
+        </div>
+      <% "result" -> %>
+        <div id="image-area">
+          <img src={@image}>
         </div>
     <% end %>
     <div id="action-prompt">

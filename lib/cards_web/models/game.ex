@@ -33,7 +33,7 @@ defmodule CardsWeb.Game do
     Logger.info("ADDING USER TO STATE")
     Logger.info("name #{name}")
 
-    state = put_in(state, [:users, user_id], %{name: name, links: [], gif_index: 0, status: nil})
+    state = put_in(state, [:users, user_id], %{name: name, links: [], gif_index: 0, status: nil, vote: nil})
     Logger.info("STATE")
     Logger.info(state)
     {:noreply, state}
@@ -59,6 +59,13 @@ defmodule CardsWeb.Game do
   @impl true
   def handle_cast({:submit_answer, socket_id}, state) do
     state = put_in(state, [:users, socket_id, :status], "submitted")
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_cast({:record_vote, user_id, vote_id}, state) do
+    state = put_in(state, [:users, user_id, :status], "voted")
+    state = put_in(state, [:users, user_id, :vote], vote_id)
     {:noreply, state}
   end
 
@@ -97,11 +104,12 @@ defmodule CardsWeb.Game do
         if all_submitted, do: "voting", else: "submission"
       "voting" ->
         users = get_in(state, [:users])
-        all_voted = Enum.all?(users, fn({_, value}) -> Map.fetch!(value, :status) == "voted" end)
+        all_voted = Enum.all?(users, fn({_, user_data}) -> Map.fetch!(user_data, :status) == "voted" end)
         if all_voted, do: "result", else: "voting"
       "result" ->
         "temp_value"
     end
+    IO.inspect(state)
     if phase != new_phase do
       put_in(state, [:phase], new_phase)
     end
@@ -119,6 +127,17 @@ defmodule CardsWeb.Game do
       %{user_id: user, link: link}
     end)
     {:reply, links, state}
+  end
+
+  @imple true
+  def handle_call(:winner, _from, state) do
+    users = get_in(state, [:users])
+    votes = Enum.map(users, fn {user, user_data} ->
+      get_in(user_data, [:vote])
+    end)
+    # this is a naive implementation; return to it later
+    winner = Enum.max(votes)
+    {:reply, winner, state}
   end
 
   def add_user(server, user_id, name) do
@@ -171,5 +190,17 @@ defmodule CardsWeb.Game do
   def fetch_candidates(server) do
     Logger.info("FETCHING CANDIDATES")
     GenServer.call(server, :current_candidates)
+  end
+
+  def vote(server, user_id, vote_id) do
+    Logger.info("VOTING ON CANDIDATE")
+    GenServer.cast(server, {:record_vote, user_id, vote_id})
+    phase = GenServer.call(server, :fetch_current_phase)
+    GenServer.call(server, :fetch_current_phase)
+  end
+
+  def fetch_winner(server) do
+    Logger.info("GETTING WINNER")
+    GenServer.call(server, {:winner})
   end
 end
