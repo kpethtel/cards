@@ -38,7 +38,7 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("submit_chat_message", %{"text_input" => %{"message" => message_input}}, socket) do
-    message_data = %{uuid: UUID.uuid4(), content: message_input, username: socket.id}
+    message_data = %{uuid: UUID.uuid4(), content: message_input, username: socket.assigns.username}
     CardsWeb.Endpoint.broadcast(socket.assigns.topic, "add_new_message", message_data)
     {:noreply, socket}
   end
