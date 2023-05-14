@@ -62,7 +62,9 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("select_answer", _value, socket) do
-    next_phase = CardsWeb.Game.submit_answer(:default, socket.id)
+    CardsWeb.Game.submit_answer(:default, socket.id)
+    next_phase = CardsWeb.Game.get_phase(:default)
+
     if next_phase == "voting" do
       CardsWeb.Endpoint.broadcast(socket.assigns.topic, "start_voting", nil)
     end
@@ -73,7 +75,7 @@ defmodule CardsWeb.RoomLive do
   @impl true
   def handle_event("vote_for_winner", %{"selection" => selected_id}, socket) do
     CardsWeb.Game.vote(:default, socket.id, selected_id)
-    next_phase = CardsWeb.Game.submit_answer(:default, socket.id)
+    next_phase = CardsWeb.Game.get_phase(:default)
 
     if next_phase == "result" do
       CardsWeb.Endpoint.broadcast(socket.assigns.topic, "show_result", nil)

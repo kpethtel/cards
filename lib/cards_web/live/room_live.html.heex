@@ -3,6 +3,8 @@
 <div id="room-container">
   <div id="game-board">
     <%= case @phase do %>
+      <% "waiting" -> %>
+        <div id="image-area"></div>
       <% "submission" -> %>
         <div id="image-area">
             <img src={@image}>
