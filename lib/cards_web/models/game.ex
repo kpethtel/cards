@@ -114,6 +114,8 @@ defmodule CardsWeb.Game do
       put_in(state, [:phase], new_phase)
     end
 
+    state = put_in(state, [:phase], new_phase)
+
     {:reply, new_phase, state}
   end
 
