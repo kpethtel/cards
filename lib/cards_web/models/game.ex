@@ -30,6 +30,24 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
+  def handle_cast(:reset_round, state) do
+    Logger.info("RESETTING ROUND")
+    state = put_in(state, [:phase], "submission")
+
+    # will eventually need to refine this
+    question = Enum.random(@questions)
+    state = put_in(state, [:question], question)
+    users = active_users(state)
+    reset_users = Enum.reduce(users, %{}, fn {user, user_data}, acc ->
+      new_data = %{name: user_data.name, links: [], gif_index: 0, status: "submission", vote: nil}
+      put_in(acc, [user], new_data)
+    end)
+    state = put_in(state, [:users], reset_users)
+
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_cast({:add, user_id, name}, state) do
     Logger.info("ADDING USER TO STATE")
     Logger.info("name #{name}")
@@ -208,6 +226,11 @@ defmodule CardsWeb.Game do
   def fetch_winner(server) do
     Logger.info("GETTING WINNER")
     winning_player = GenServer.call(server, :winner)
+  end
+
+  def start_new_round(server) do
+    Logger.info("=== Start new round ===")
+    GenServer.cast(server, :reset_round)
   end
 
   def active_users(state) do

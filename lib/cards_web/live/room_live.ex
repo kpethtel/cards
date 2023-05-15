@@ -95,8 +95,19 @@ defmodule CardsWeb.RoomLive do
   def handle_info(%{event: "show_result"}, socket) do
     # might be better to pass this from the calling function
     winner = CardsWeb.Game.fetch_winner(:default)
+    Process.send_after(self(), :start_next_round, 3_000)
 
     {:noreply, assign(socket, prompt: "Behold, the winner!", phase: "result", image: winner)}
+  end
+
+  @impl true
+  def handle_info(:start_next_round, socket) do
+    CardsWeb.Game.start_new_round(:default)
+    next_phase = CardsWeb.Game.get_phase(:default)
+    question = CardsWeb.Game.get_question(:default)
+    prompt = "Search for an appropriate answer to the question"
+
+    {:noreply, assign(socket, phase: next_phase, prompt: prompt, question: question, image: nil)}
   end
 
   @impl true
