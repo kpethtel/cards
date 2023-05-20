@@ -14,8 +14,8 @@ defmodule CardsWeb.RoomLive do
       CardsWeb.Game.add_user(:default, socket.id, username)
     end
 
-    question = CardsWeb.Game.get_question(:default)
-    phase = CardsWeb.Game.get_phase(:default)
+    question = CardsWeb.Game.fetch_question(:default)
+    phase = CardsWeb.Game.fetch_current_phase(:default)
 
     {:ok,
     assign(
@@ -63,7 +63,7 @@ defmodule CardsWeb.RoomLive do
   @impl true
   def handle_event("select_answer", _value, socket) do
     CardsWeb.Game.submit_answer(:default, socket.id)
-    next_phase = CardsWeb.Game.get_phase(:default)
+    next_phase = CardsWeb.Game.fetch_current_phase(:default)
 
     if next_phase == "voting" do
       candidates = CardsWeb.Game.fetch_candidates(:default)
@@ -75,8 +75,8 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("vote_for_winner", %{"selection" => selected_id}, socket) do
-    CardsWeb.Game.vote(:default, socket.id, selected_id)
-    next_phase = CardsWeb.Game.get_phase(:default)
+    CardsWeb.Game.cast_vote(:default, socket.id, selected_id)
+    next_phase = CardsWeb.Game.fetch_current_phase(:default)
 
     if next_phase == "result" do
       winner = CardsWeb.Game.fetch_winner(:default)
@@ -101,8 +101,8 @@ defmodule CardsWeb.RoomLive do
   @impl true
   def handle_info(:start_next_round, socket) do
     CardsWeb.Game.start_new_round(:default)
-    next_phase = CardsWeb.Game.get_phase(:default)
-    question = CardsWeb.Game.get_question(:default)
+    next_phase = CardsWeb.Game.fetch_current_phase(:default)
+    question = CardsWeb.Game.fetch_question(:default)
     prompt = "Search for an appropriate answer to the question"
 
     {:noreply, assign(socket, phase: next_phase, prompt: prompt, question: question, image: nil)}
@@ -145,6 +145,7 @@ defmodule CardsWeb.RoomLive do
     """
   end
 
+  # this should not be in the room
   def fetch_gifs(username, search_term) do
     search_term = URI.encode(search_term)
     giphy_base_url = Application.get_env(:cards, :base_url)
