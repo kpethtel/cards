@@ -66,7 +66,8 @@ defmodule CardsWeb.RoomLive do
     next_phase = CardsWeb.Game.get_phase(:default)
 
     if next_phase == "voting" do
-      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "start_voting", nil)
+      candidates = CardsWeb.Game.fetch_candidates(:default)
+      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "start_voting", candidates)
     end
 
     {:noreply, assign(socket, previous_button_visible: false, next_button_visible: false, prompt: "Waiting on voting round")}
@@ -78,23 +79,20 @@ defmodule CardsWeb.RoomLive do
     next_phase = CardsWeb.Game.get_phase(:default)
 
     if next_phase == "result" do
-      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "show_result", nil)
+      winner = CardsWeb.Game.fetch_winner(:default)
+      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "show_result", winner)
     end
+
     {:noreply, socket}
   end
 
   @impl true
-  def handle_info(%{event: "start_voting"}, socket) do
-    # might be better to pass this from the calling function
-    candidates = CardsWeb.Game.fetch_candidates(:default)
-
+  def handle_info(%{event: "start_voting", payload: candidates}, socket) do
     {:noreply, assign(socket, prompt: "Vote on the winner", phase: "voting", image: nil, candidates: candidates)}
   end
 
   @impl true
-  def handle_info(%{event: "show_result"}, socket) do
-    # might be better to pass this from the calling function
-    winner = CardsWeb.Game.fetch_winner(:default)
+  def handle_info(%{event: "show_result", payload: winner}, socket) do
     Process.send_after(self(), :start_next_round, 3_000)
 
     {:noreply, assign(socket, prompt: "Behold, the winner!", phase: "result", image: winner)}
