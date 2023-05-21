@@ -13,6 +13,8 @@ defmodule CardsWeb.Game do
     "What do you enjoy most about your work?"
   ]
 
+  @phases ["submission", "voting", "result"]
+
   def start_link(name: name) do
     Logger.info("received name: #{name}")
     GenServer.start_link(__MODULE__, %{}, name: name)
@@ -21,7 +23,7 @@ defmodule CardsWeb.Game do
   @impl true
   def init(state) do
     Logger.info("=== INITIALIZING GAME ===")
-    state = put_in(state, [:phase], "waiting")
+    state = put_in(state, [:phase_index], 0)
     state = put_in(state, [:users], %{})
     question = Enum.random(@questions)
     state = put_in(state, [:question], question)
@@ -30,36 +32,32 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
-  def handle_cast(:reset_round, state) do
-    Logger.info("RESETTING ROUND")
-    state = put_in(state, [:phase], "submission")
-
-    # will eventually need to refine this
-    question = Enum.random(@questions)
-    state = put_in(state, [:question], question)
-    users = active_users(state)
-    reset_users = Enum.reduce(users, %{}, fn {user, user_data}, acc ->
-      new_data = %{name: user_data.name, links: [], gif_index: 0, status: "submission", vote: nil}
-      put_in(acc, [user], new_data)
-    end)
-    state = put_in(state, [:users], reset_users)
+  def handle_cast({:set_user, user_id, name}, state) do
+    Logger.info("ADDING USER TO STATE: #{name}")
+    phase_index = get_in(state, [:phase_index])
+    status = if phase_index == 0, do: "pending", else: "waiting"
+    # might be worth breaking out gif and index into separate section because the values may change dependent upon game type
+    # perhaps call it deck
+    state = put_in(state, [:users, user_id], %{name: name, links: [], gif_index: 0, status: status, vote: nil})
 
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:set_user, user_id, name}, state) do
-    Logger.info("ADDING USER TO STATE")
-    Logger.info("name #{name}")
-    IO.inspect(state, label: "ADD USER STATE")
+  def handle_cast(:reset_round, state) do
+    Logger.info("RESETTING ROUND")
+    state = put_in(state, [:phase_index], 0)
 
-    # naive
-    state = put_in(state, [:phase], "submission")
-    # might be worth breaking out gif and index into separate section because the values may change dependent upon game type
-    # perhaps call it deck
-    state = put_in(state, [:users, user_id], %{name: name, links: [], gif_index: 0, status: "waiting", vote: nil})
-    Logger.info("STATE")
-    Logger.info(state)
+    # will eventually need to refine this
+    question = Enum.random(@questions)
+    state = put_in(state, [:question], question)
+    users = Enum.filter(state[:users], fn {_user, user_data} -> user_data[:status] != nil end)
+    reset_users = Enum.reduce(users, %{}, fn {user, user_data}, acc ->
+      new_data = %{name: user_data.name, links: [], gif_index: 0, status: "pending", vote: nil}
+      put_in(acc, [user], new_data)
+    end)
+    state = put_in(state, [:users], reset_users)
+
     {:noreply, state}
   end
 
@@ -82,13 +80,13 @@ defmodule CardsWeb.Game do
 
   @impl true
   def handle_cast({:set_status, socket_id}, state) do # perhaps use pattern matching for new status value
-    state = put_in(state, [:users, socket_id, :status], "submitted")
+    state = put_in(state, [:users, socket_id, :status], "complete")
     {:noreply, state}
   end
 
   @impl true
   def handle_cast({:record_vote, user_id, vote_id}, state) do
-    state = put_in(state, [:users, user_id, :status], "voted")
+    state = put_in(state, [:users, user_id, :status], "complete")
     state = put_in(state, [:users, user_id, :vote], vote_id)
     {:noreply, state}
   end
@@ -116,33 +114,34 @@ defmodule CardsWeb.Game do
 
   @impl true
   def handle_call(:get_phase, _from, state) do
-    Logger.info("FETCHING PHASE")
-    IO.inspect(state, label: "=== FETCHING CURRENT PHASE ===")
+    index = get_in(state, [:phase_index])
+    phase = Enum.at(@phases, index)
+
+    {:reply, phase, state}
+  end
+
+  def handle_call(:phase_complete, _from, state) do
     users = active_users(state)
-    phase = get_in(state, [:phase])
-
-    if length(users) > 0 do
-      new_phase = case phase do
-        "submission" ->
-          all_submitted = Enum.all?(users, fn({_, user_data}) -> Map.fetch!(user_data, :status) == "submitted" end)
-          Logger.info("all submitted is #{all_submitted}")
-          if all_submitted, do: "voting", else: "submission"
-        "voting" ->
-          all_voted = Enum.all?(users, fn({_, user_data}) -> Map.fetch!(user_data, :status) == "voted" end)
-          Logger.info("all voted is #{all_voted}")
-          if all_voted, do: "result", else: "voting"
-        "result" ->
-          "result"
-        "waiting" ->
-          "waiting"
-      end
-
-      state = put_in(state, [:phase], new_phase)
-
-      {:reply, new_phase, state}
+    index = get_in(state, [:phase_index])
+    phase = Enum.at(@phases, index)
+    phase_complete = if length(users) > 0 do
+      Enum.all?(users, fn({_, user_data}) -> Map.fetch!(user_data, :status) == "complete" end)
     else
-      {:reply, phase, state}
+      false
     end
+
+    {:reply, phase_complete, state}
+  end
+
+  def handle_cast(:increment_phase, state) do
+    users = active_users(state)
+    reset_users = Enum.reduce(users, %{}, fn {user, user_data}, acc ->
+      new_data = %{name: user_data.name, links: user_data.links, gif_index: user_data.gif_index, status: "pending", vote: nil}
+      put_in(acc, [user], new_data)
+    end)
+    state = put_in(state, [:users], reset_users)
+
+    {:noreply, state}
   end
 
   @imple true
@@ -211,25 +210,33 @@ defmodule CardsWeb.Game do
     current_index > 0
   end
 
-  def submit_answer(server, socket_id) do
+  def submit_answer(server, socket_id, room_topic) do
     Logger.info("SELECTING ANSWER")
     GenServer.cast(server, {:set_status, socket_id})
+    complete = GenServer.call(server, :phase_complete)
+    Logger.info("PHASE COMPLETE IS: #{complete}")
+
+    if complete == true do
+      GenServer.cast(server, :increment_phase)
+      # also reset all user statuses
+      candidates = GenServer.call(server, :get_candidates)
+      CardsWeb.Endpoint.broadcast(room_topic, "start_voting", candidates)
+    end
   end
 
-  def fetch_candidates(server) do
-    Logger.info("FETCHING CANDIDATES")
-    GenServer.call(server, :get_candidates)
-  end
-
-  def cast_vote(server, user_id, vote_id) do
+  def cast_vote(server, user_id, vote_id, room_topic) do
     Logger.info("VOTING ON CANDIDATE")
     GenServer.cast(server, {:record_vote, user_id, vote_id})
+    complete = GenServer.call(server, :phase_complete)
+    Logger.info("PHASE COMPLETE IS: #{complete}")
+
+    if complete == true do
+      winner = GenServer.call(server, :get_winner)
+      GenServer.cast(server, :increment_phase)
+      CardsWeb.Endpoint.broadcast(room_topic, "show_result", winner)
+    end
   end
 
-  def fetch_winner(server) do
-    Logger.info("GETTING WINNER")
-    winning_player = GenServer.call(server, :get_winner)
-  end
 
   def start_new_round(server) do
     Logger.info("=== Start new round ===")
@@ -237,7 +244,8 @@ defmodule CardsWeb.Game do
   end
 
   def active_users(state) do
-    users = Enum.filter(state[:users], fn {_user, user_data} -> user_data[:status] != nil end)
+    # filter out nil users, which sometimes occur due to reloaded pages
+    users = Enum.filter(state[:users], fn {_user, user_data} -> !(user_data[:status] in [nil, "waiting"]) end)
     IO.inspect(users, label: "=== GOT USERS ===")
     users
   end

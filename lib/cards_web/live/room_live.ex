@@ -62,26 +62,14 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_event("select_answer", _value, socket) do
-    CardsWeb.Game.submit_answer(:default, socket.id)
-    next_phase = CardsWeb.Game.fetch_current_phase(:default)
-
-    if next_phase == "voting" do
-      candidates = CardsWeb.Game.fetch_candidates(:default)
-      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "start_voting", candidates)
-    end
+    CardsWeb.Game.submit_answer(:default, socket.id, socket.assigns.topic)
 
     {:noreply, assign(socket, previous_button_visible: false, next_button_visible: false, prompt: "Waiting on voting round")}
   end
 
   @impl true
   def handle_event("vote_for_winner", %{"selection" => selected_id}, socket) do
-    CardsWeb.Game.cast_vote(:default, socket.id, selected_id)
-    next_phase = CardsWeb.Game.fetch_current_phase(:default)
-
-    if next_phase == "result" do
-      winner = CardsWeb.Game.fetch_winner(:default)
-      CardsWeb.Endpoint.broadcast(socket.assigns.topic, "show_result", winner)
-    end
+    CardsWeb.Game.cast_vote(:default, socket.id, selected_id, socket.assigns.topic)
 
     {:noreply, socket}
   end
