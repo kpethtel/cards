@@ -157,15 +157,18 @@ defmodule CardsWeb.Game do
   end
 
   @imple true
-  def handle_call(:get_winner, _from, state) do
-    users = active_users(state)
-    votes = Enum.map(users, fn {_user, user_data} ->
-      get_in(user_data, [:vote])
-    end)
-    # this is a naive implementation; return to it later
-    winning_user_id = Enum.max(votes)
-    current_image = current_image_for_user(state, winning_user_id)
-    {:reply, current_image, state}
+  def handle_call(:get_winners, _from, state) do
+    ranked = state
+              |> active_users
+              |> Enum.map(fn {_user, user_data} ->
+                  get_in(user_data, [:vote])
+                end)
+              |> Enum.frequencies
+
+    {_, most_votes} = Enum.max_by(ranked, &elem(&1, 1))
+    winners = Enum.filter(ranked, fn { _voted_id, vote_count} -> vote_count == most_votes end)
+    winning_images = Enum.map(winners, fn { voted_id, _vote_count} -> current_image_for_user(state, voted_id) end)
+    {:reply, winning_images, state}
   end
 
   def add_user(server, user_id, name) do
@@ -231,9 +234,9 @@ defmodule CardsWeb.Game do
     Logger.info("PHASE COMPLETE IS: #{complete}")
 
     if complete == true do
-      winner = GenServer.call(server, :get_winner)
+      winners = GenServer.call(server, :get_winners)
       GenServer.cast(server, :increment_phase)
-      CardsWeb.Endpoint.broadcast(room_topic, "show_result", winner)
+      CardsWeb.Endpoint.broadcast(room_topic, "show_result", winners)
     end
   end
 

@@ -7,10 +7,12 @@
         <div id="image-area"></div>
       <% "submission" -> %>
         <div id="image-area">
-            <img src={@image}>
+          <%= for image <- @images do %>
+            <img src={image}>
+          <% end %>
         </div>
         <div id="image-navigation-controls">
-          <%= if @image && @phase == "submission" do %>
+          <%= if Enum.count(@images) > 0 && @phase == "submission" do %>
             <div class="button-area">
               <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
             </div>
@@ -24,13 +26,15 @@
         </div>
       <% "voting" -> %>
         <div id="image-area">
-          <%= for candidate <- @candidates do %>
-            <img id={get_in(candidate, [:user_id])} src={get_in(candidate, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(candidate, [:user_id])}>
+          <%= for image <- @images do %>
+            <img id={get_in(image, [:user_id])} src={get_in(image, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(image, [:user_id])}>
           <% end %>
         </div>
       <% "result" -> %>
         <div id="image-area">
-          <img src={@image}>
+          <%= for image <- @images do %>
+            <img src={image}>
+          <% end %>
         </div>
     <% end %>
     <div id="action-prompt">

@@ -25,8 +25,7 @@ defmodule CardsWeb.RoomLive do
       username: username,
       message_list: [],
       user_list: [],
-      image: nil,
-      candidates: [],
+      images: [],
       next_button_visible: false,
       previous_button_visible: false,
       question: question,
@@ -49,7 +48,7 @@ defmodule CardsWeb.RoomLive do
     links = Enum.shuffle(links)
     CardsWeb.Game.initialize_gif_deck(:default, socket.id, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, socket.id)
-    {:noreply, assign(socket, image: first_url, previous_button_visible: false, next_button_visible: true)}
+    {:noreply, assign(socket, images: [first_url], previous_button_visible: false, next_button_visible: true)}
   end
 
   @impl true
@@ -57,7 +56,7 @@ defmodule CardsWeb.RoomLive do
     CardsWeb.Game.change_gif_index(:default, socket.id, direction)
     new_gif = CardsWeb.Game.fetch_current_image(:default, socket.id)
     previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, socket.id)
-    {:noreply, assign(socket, image: new_gif, previous_button_visible: previous_button_visible)}
+    {:noreply, assign(socket, images: [new_gif], previous_button_visible: previous_button_visible)}
   end
 
   @impl true
@@ -76,14 +75,14 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_info(%{event: "start_voting", payload: candidates}, socket) do
-    {:noreply, assign(socket, prompt: "Vote on the winner", phase: "voting", image: nil, candidates: candidates)}
+    {:noreply, assign(socket, prompt: "Vote on the winner", phase: "voting", images: candidates)}
   end
 
   @impl true
-  def handle_info(%{event: "show_result", payload: winner}, socket) do
+  def handle_info(%{event: "show_result", payload: winners}, socket) do
     Process.send_after(self(), :start_next_round, 3_000)
 
-    {:noreply, assign(socket, prompt: "Behold, the winner!", phase: "result", image: winner)}
+    {:noreply, assign(socket, prompt: "Behold, the winner!", phase: "result", images: winners)}
   end
 
   @impl true
@@ -93,7 +92,7 @@ defmodule CardsWeb.RoomLive do
     question = CardsWeb.Game.fetch_question(:default)
     prompt = "Search for an appropriate answer to the question"
 
-    {:noreply, assign(socket, phase: next_phase, prompt: prompt, question: question, image: nil)}
+    {:noreply, assign(socket, phase: next_phase, prompt: prompt, question: question, images: [])}
   end
 
   @impl true
