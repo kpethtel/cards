@@ -2,41 +2,31 @@
 
 <div id="room-container">
   <div id="game-board">
-    <%= case @phase do %>
-      <% "waiting" -> %>
-        <div id="image-area"></div>
-      <% "submission" -> %>
-        <div id="image-area">
-          <%= for image <- @images do %>
-            <img src={image}>
-          <% end %>
-        </div>
-        <div id="image-navigation-controls">
-          <%= if Enum.count(@images) > 0 && @phase == "submission" do %>
-            <div class="button-area">
-              <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
-            </div>
-            <div class="button-area">
-              <button phx-click="select_answer">Select</button>
-            </div>
-            <div class="button-area">
-              <button class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
-            </div>
-          <% end %>
-        </div>
-      <% "voting" -> %>
-        <div id="image-area">
+    <div id="image-area">
+      <%= case @phase do %>
+        <% "voting" -> %>
           <%= for image <- @images do %>
             <img id={get_in(image, [:user_id])} src={get_in(image, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(image, [:user_id])}>
           <% end %>
-        </div>
-      <% "result" -> %>
-        <div id="image-area">
+        <%= _ -> %>
           <%= for image <- @images do %>
             <img src={image}>
           <% end %>
+      <% end %>
+    </div>
+    <div id="image-navigation-controls">
+      <%= if @phase == "submission" && Enum.count(@images) > 0 do %>
+        <div class="button-area">
+          <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
         </div>
-    <% end %>
+        <div class="button-area">
+          <button phx-click="select_answer">Select</button>
+        </div>
+        <div class="button-area">
+          <button class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+        </div>
+      <% end %>
+    </div>
     <div id="action-prompt">
       <p><%= @prompt %></p>
     </div>
