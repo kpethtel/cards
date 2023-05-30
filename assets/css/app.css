@@ -10,6 +10,7 @@
 #game-board {
   border-right: 1px solid black;
   float: left;
+  position: relative;
   width: 70%;
 }
 
@@ -28,9 +29,13 @@
 }
 
 #action-prompt p {
+  bottom: 0;
   font-weight: bold;;
   margin-bottom: 0px;
+  max-height: 26px;
+  position: absolute;
   text-align: center;
+  width: 100%;
 }
 
 #chat-messages {
@@ -105,7 +110,6 @@
 }
 
 #input-type-toggle {
-  background: lightblue;
   min-width: 115px;
 }
 

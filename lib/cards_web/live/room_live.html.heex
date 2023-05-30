@@ -14,8 +14,8 @@
           <% end %>
       <% end %>
     </div>
-    <div id="image-navigation-controls">
-      <%= if @phase == "submission" && Enum.count(@images) > 0 do %>
+    <%= if @phase == "submission" && Enum.count(@images) > 0 do %>
+      <div id="image-navigation-controls">
         <div class="button-area">
           <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
         </div>
@@ -25,8 +25,8 @@
         <div class="button-area">
           <button class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
         </div>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
     <div id="action-prompt">
       <p><%= @prompt %></p>
     </div>

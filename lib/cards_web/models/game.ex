@@ -9,7 +9,7 @@ defmodule CardsWeb.Game do
     "How would you describe your work style?",
     "What is your spirit animal?",
     "Can you tell us about a time you made a mistake?",
-    "Can you tell us about an accomplishement you're proud of?",
+    "Can you tell us about an accomplishment you're proud of?",
     "What do you enjoy most about your work?"
   ]
 
@@ -158,6 +158,7 @@ defmodule CardsWeb.Game do
 
   @imple true
   def handle_call(:get_winners, _from, state) do
+    # there's gotta be a better way than this sequence
     ranked = state
               |> active_users
               |> Enum.map(fn {_user, user_data} ->
