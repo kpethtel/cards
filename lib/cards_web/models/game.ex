@@ -44,6 +44,15 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
+  def handle_cast({:delete_user, user_id}, state) do
+    IO.inspect(state, label: "BEFORE DELETE")
+    {_old, state} = pop_in(state, [:users, user_id])
+    IO.inspect(state, label: "AFTER DELETE")
+
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_cast(:reset_round, state) do
     Logger.info("RESETTING ROUND")
     state = put_in(state, [:phase_index], 0)
@@ -177,6 +186,11 @@ defmodule CardsWeb.Game do
     GenServer.cast(server, {:set_user, user_id, name})
   end
 
+  def remove_user(server, user_id) do
+    Logger.info(user_id, label: "REMOVING USER")
+    GenServer.cast(server, {:delete_user, user_id})
+  end
+
   def fetch_question(server) do
     GenServer.call(server, :get_current_question)
   end
@@ -240,7 +254,6 @@ defmodule CardsWeb.Game do
       CardsWeb.Endpoint.broadcast(room_topic, "show_result", winners)
     end
   end
-
 
   def start_new_round(server) do
     Logger.info("=== Start new round ===")

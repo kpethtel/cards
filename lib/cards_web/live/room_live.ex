@@ -120,6 +120,12 @@ defmodule CardsWeb.RoomLive do
     {:noreply, assign(socket, message_list: join_messages ++ leave_messages, user_list: user_list)}
   end
 
+  def terminate(reason, socket) do
+    CardsWeb.Game.remove_user(:default, socket.id)
+
+    :ok
+  end
+
   def display_message(assigns = %{type: :system, uuid: uuid, content: message}) do
     ~H"""
     <li id={uuid}><em><%= message %></em></li>

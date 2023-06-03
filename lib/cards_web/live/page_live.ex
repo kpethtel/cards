@@ -4,12 +4,11 @@ defmodule CardsWeb.PageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, query: "", results: %{})}
+    {:ok, assign(socket, %{})}
   end
 
   @impl true
   def handle_event("admit_user", %{"chat" => %{"username" => username}}, socket) do
-    Logger.info(username)
     {:noreply, push_redirect(socket, to: Routes.room_path(CardsWeb.Endpoint, :index, "default", username: username))}
   end
 end
