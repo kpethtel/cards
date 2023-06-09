@@ -28,6 +28,21 @@
   object-fit: contain;
 }
 
+#multi-image-area {
+  align-items: center;
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(2, 1fr);
+  height: 480px;
+  justify-items: center;
+  overflow-y: scroll;
+}
+
+#multi-image-area img {
+  object-fit: contain;
+}
+
+
 #action-prompt p {
   bottom: 0;
   font-weight: bold;;

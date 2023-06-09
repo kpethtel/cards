@@ -2,7 +2,7 @@
 
 <div id="room-container">
   <div id="game-board">
-    <div id="image-area">
+    <div id={if Enum.count(@images) > 1, do: "multi-image-area", else: "image-area"}>
       <%= case @phase do %>
         <% "voting" -> %>
           <%= for image <- @images do %>
