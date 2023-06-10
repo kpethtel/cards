@@ -3,7 +3,7 @@
 <div id="room-container">
   <div id="game-board">
     <%= display_images(%{phase: @phase, images: @images}) %>
-    <%= display_controls(%{phase: @phase, images: @images, previous_button_visible: @previous_button_visible, next_button_visible: @next_button_visible}) %>
+    <%= display_controls(%{phase: @phase, images: @images}) %>
     <div id="action-prompt">
       <p><%= @prompt %></p>
     </div>

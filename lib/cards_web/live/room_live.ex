@@ -26,8 +26,6 @@ defmodule CardsWeb.RoomLive do
       message_list: [],
       user_list: [],
       images: [],
-      next_button_visible: false,
-      previous_button_visible: false,
       question: question,
       phase: phase,
       prompt: "Search for an appropriate answer to the question",
@@ -48,22 +46,21 @@ defmodule CardsWeb.RoomLive do
     links = Enum.shuffle(links)
     CardsWeb.Game.initialize_gif_deck(:default, socket.id, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, socket.id)
-    {:noreply, assign(socket, images: [first_url], previous_button_visible: false, next_button_visible: true)}
+    {:noreply, assign(socket, images: [first_url])}
   end
 
   @impl true
   def handle_event("change_image", %{"direction" => direction}, socket) do
     CardsWeb.Game.change_gif_index(:default, socket.id, direction)
     new_gif = CardsWeb.Game.fetch_current_image(:default, socket.id)
-    previous_button_visible = CardsWeb.Game.previous_gif_exists?(:default, socket.id)
-    {:noreply, assign(socket, images: [new_gif], previous_button_visible: previous_button_visible)}
+    {:noreply, assign(socket, images: [new_gif])}
   end
 
   @impl true
   def handle_event("select_answer", _value, socket) do
     CardsWeb.Game.submit_answer(:default, socket.id, socket.assigns.topic)
 
-    {:noreply, assign(socket, previous_button_visible: false, next_button_visible: false, prompt: "Waiting on voting round")}
+    {:noreply, assign(socket, prompt: "Waiting on voting round")}
   end
 
   @impl true
@@ -158,18 +155,18 @@ defmodule CardsWeb.RoomLive do
     """
   end
 
-  def display_controls(assigns = %{phase: phase, images: images, previous_button_visible: previous_button_visible, next_button_visible: next_button_visible}) do
+  def display_controls(assigns = %{phase: phase, images: images}) do
     if phase == "submission" && Enum.count(images) > 0 do
       ~H"""
         <div id="image-navigation-controls">
           <div class="button-area">
-            <button class={if !previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
+            <button phx-click="change_image" phx-value-direction="previous">Previous</button>
           </div>
           <div class="button-area">
             <button phx-click="select_answer">Select</button>
           </div>
           <div class="button-area">
-            <button class={if !next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+            <button phx-click="change_image" phx-value-direction="next">Next</button>
           </div>
         </div>
       """

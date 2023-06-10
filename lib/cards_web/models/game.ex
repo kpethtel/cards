@@ -220,14 +220,6 @@ defmodule CardsWeb.Game do
     GenServer.call(server, {:get_current_gif, socket_id})
   end
 
-  # this should be possible on FE
-  def previous_gif_exists?(server, socket_id) do
-    Logger.info("DOES A PREVIOUS GIF EXIST?")
-    current_index = GenServer.call(server, {:get_index, socket_id})
-    IO.inspect(current_index)
-    current_index > 0
-  end
-
   def submit_answer(server, socket_id, room_topic) do
     Logger.info("SELECTING ANSWER")
     GenServer.cast(server, {:set_status, socket_id})

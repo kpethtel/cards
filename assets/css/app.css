@@ -106,10 +106,6 @@
   padding: 0;
 }
 
-.hidden {
-  display: none;
-}
-
 #text-input-area {
   display: flex;
 }
