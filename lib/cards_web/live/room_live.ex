@@ -87,6 +87,7 @@ defmodule CardsWeb.RoomLive do
 
   @impl true
   def handle_info(:start_next_round, socket) do
+    # is it possible to do this in the previous step to avoid duplicate data fetching
     CardsWeb.Game.start_new_round(:default)
     next_phase = CardsWeb.Game.fetch_current_phase(:default)
     question = CardsWeb.Game.fetch_question(:default)
@@ -120,7 +121,7 @@ defmodule CardsWeb.RoomLive do
     {:noreply, assign(socket, message_list: join_messages ++ leave_messages, user_list: user_list)}
   end
 
-  def terminate(reason, socket) do
+  def terminate(_reason, socket) do
     CardsWeb.Game.remove_user(:default, socket.id)
 
     :ok
@@ -136,6 +137,43 @@ defmodule CardsWeb.RoomLive do
     ~H"""
     <li id={uuid}><strong> <%= username %> </strong>: <%= message %></li>
     """
+  end
+
+  def display_images(assigns = %{phase: phase, images: images}) do
+    area_class = if Enum.count(images) > 1, do: "multi-image-area", else: "image-area"
+
+    ~H"""
+      <div id={area_class}>
+        <%= case phase do %>
+          <% "voting" -> %>
+            <%= for image <- images do %>
+              <img id={get_in(image, [:user_id])} src={get_in(image, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(image, [:user_id])}>
+            <% end %>
+          <% _ -> %>
+            <%= for image <- images do %>
+              <img src={image}>
+            <% end %>
+        <% end %>
+      </div>
+    """
+  end
+
+  def display_controls(assigns = %{phase: phase, images: images, previous_button_visible: previous_button_visible, next_button_visible: next_button_visible}) do
+    if phase == "submission" && Enum.count(images) > 0 do
+      ~H"""
+        <div id="image-navigation-controls">
+          <div class="button-area">
+            <button class={if !previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
+          </div>
+          <div class="button-area">
+            <button phx-click="select_answer">Select</button>
+          </div>
+          <div class="button-area">
+            <button class={if !next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
+          </div>
+        </div>
+      """
+    end
   end
 
   # this should not be in the room

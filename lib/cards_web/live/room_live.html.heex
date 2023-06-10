@@ -2,31 +2,8 @@
 
 <div id="room-container">
   <div id="game-board">
-    <div id={if Enum.count(@images) > 1, do: "multi-image-area", else: "image-area"}>
-      <%= case @phase do %>
-        <% "voting" -> %>
-          <%= for image <- @images do %>
-            <img id={get_in(image, [:user_id])} src={get_in(image, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(image, [:user_id])}>
-          <% end %>
-        <%= _ -> %>
-          <%= for image <- @images do %>
-            <img src={image}>
-          <% end %>
-      <% end %>
-    </div>
-    <%= if @phase == "submission" && Enum.count(@images) > 0 do %>
-      <div id="image-navigation-controls">
-        <div class="button-area">
-          <button class={if !@previous_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="previous">Previous</button>
-        </div>
-        <div class="button-area">
-          <button phx-click="select_answer">Select</button>
-        </div>
-        <div class="button-area">
-          <button class={if !@next_button_visible, do: "hidden"} phx-click="change_image" phx-value-direction="next">Next</button>
-        </div>
-      </div>
-    <% end %>
+    <%= display_images(%{phase: @phase, images: @images}) %>
+    <%= display_controls(%{phase: @phase, images: @images, previous_button_visible: @previous_button_visible, next_button_visible: @next_button_visible}) %>
     <div id="action-prompt">
       <p><%= @prompt %></p>
     </div>
