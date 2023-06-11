@@ -44,16 +44,16 @@ defmodule CardsWeb.RoomLive do
   def handle_event("submit_search_query", %{"text_input" => %{"message" => search_query}}, socket) do
     links = fetch_gifs(socket.id, search_query)
     links = Enum.shuffle(links)
-    CardsWeb.Game.initialize_gif_deck(:default, socket.id, links)
+    CardsWeb.Game.initialize_image_deck(:default, socket.id, links)
     first_url = CardsWeb.Game.fetch_current_image(:default, socket.id)
     {:noreply, assign(socket, images: [first_url])}
   end
 
   @impl true
   def handle_event("change_image", %{"direction" => direction}, socket) do
-    CardsWeb.Game.change_gif_index(:default, socket.id, direction)
-    new_gif = CardsWeb.Game.fetch_current_image(:default, socket.id)
-    {:noreply, assign(socket, images: [new_gif])}
+    CardsWeb.Game.change_image_index(:default, socket.id, direction)
+    new_image = CardsWeb.Game.fetch_current_image(:default, socket.id)
+    {:noreply, assign(socket, images: [new_image])}
   end
 
   @impl true

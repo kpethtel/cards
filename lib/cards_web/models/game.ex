@@ -36,9 +36,7 @@ defmodule CardsWeb.Game do
     Logger.info("ADDING USER TO STATE: #{name}")
     phase_index = get_in(state, [:phase_index])
     status = if phase_index == 0, do: "pending", else: "waiting"
-    # might be worth breaking out gif and index into separate section because the values may change dependent upon game type
-    # perhaps call it deck
-    state = put_in(state, [:users, user_id], %{name: name, links: [], gif_index: 0, status: status, vote: nil})
+    state = put_in(state, [:users, user_id], %{name: name, links: [], image_index: 0, status: status, vote: nil})
 
     {:noreply, state}
   end
@@ -62,7 +60,7 @@ defmodule CardsWeb.Game do
     state = put_in(state, [:question], question)
     users = Enum.filter(state[:users], fn {_user, user_data} -> user_data[:status] != nil end)
     reset_users = Enum.reduce(users, %{}, fn {user, user_data}, acc ->
-      new_data = %{name: user_data.name, links: [], gif_index: 0, status: "pending", vote: nil}
+      new_data = %{name: user_data.name, links: [], image_index: 0, status: "pending", vote: nil}
       put_in(acc, [user], new_data)
     end)
     state = put_in(state, [:users], reset_users)
@@ -74,16 +72,16 @@ defmodule CardsWeb.Game do
   def handle_cast({:set_links, socket_id, links}, state) do
     Logger.info("ADDING LINKS TO STATE")
     state = put_in(state, [:users, socket_id, :links], links)
-    state = put_in(state, [:users, socket_id, :gif_index], 0)
+    state = put_in(state, [:users, socket_id, :image_index], 0)
     {:noreply, state}
   end
 
   @impl true
   def handle_cast({:shift_index, socket_id, offset}, state) do
     Logger.info("CHANGING INDEX")
-    current_index = get_in(state, [:users, socket_id, :gif_index])
+    current_index = get_in(state, [:users, socket_id, :image_index])
     new_index = current_index + offset
-    state = put_in(state, [:users, socket_id, :gif_index], new_index)
+    state = put_in(state, [:users, socket_id, :image_index], new_index)
     {:noreply, state}
   end
 
@@ -101,17 +99,10 @@ defmodule CardsWeb.Game do
   end
 
   @impl true
-  def handle_call({:get_current_gif, socket_id}, _from, state) do
-    Logger.info("FETCHING NEW GIF")
+  def handle_call({:get_current_image, socket_id}, _from, state) do
+    Logger.info("FETCHING NEW IMAGE")
     current_image = current_image_for_user(state, socket_id)
     {:reply, current_image, state}
-  end
-
-  @impl true
-  def handle_call({:get_index, socket_id}, _from, state) do
-    Logger.info("FETCHING INDEX")
-    current_index = get_in(state, [:users, socket_id, :gif_index])
-    {:reply, current_index, state}
   end
 
   @impl true
@@ -145,7 +136,7 @@ defmodule CardsWeb.Game do
   def handle_cast(:increment_phase, state) do
     users = active_users(state)
     reset_users = Enum.reduce(users, %{}, fn {user, user_data}, acc ->
-      new_data = %{name: user_data.name, links: user_data.links, gif_index: user_data.gif_index, status: "pending", vote: nil}
+      new_data = %{name: user_data.name, links: user_data.links, image_index: user_data.image_index, status: "pending", vote: nil}
       put_in(acc, [user], new_data)
     end)
     state = put_in(state, [:users], reset_users)
@@ -158,7 +149,7 @@ defmodule CardsWeb.Game do
     users = active_users(state)
     links = Enum.map(users, fn {user, user_data} ->
       links = get_in(user_data, [:links])
-      index = get_in(user_data, [:gif_index])
+      index = get_in(user_data, [:image_index])
       {:ok, link} = Enum.fetch(links, index)
       %{user_id: user, link: link}
     end)
@@ -200,24 +191,24 @@ defmodule CardsWeb.Game do
     GenServer.call(server, :get_phase)
   end
 
-  def initialize_gif_deck(server, socket_id, links) do
+  def initialize_image_deck(server, socket_id, links) do
     Logger.info("ADDING IMAGES")
     GenServer.cast(server, {:set_links, socket_id, links})
   end
 
-  def change_gif_index(server, socket_id, "previous") do
+  def change_image_index(server, socket_id, "previous") do
     Logger.info("FETCHING PREVIOUS IMAGE FROM STATE")
     GenServer.cast(server, {:shift_index, socket_id, -1})
   end
 
-  def change_gif_index(server, socket_id, "next") do
+  def change_image_index(server, socket_id, "next") do
     Logger.info("FETCHING NEXT IMAGE FROM STATE")
     GenServer.cast(server, {:shift_index, socket_id, 1})
   end
 
   def fetch_current_image(server, socket_id) do
     Logger.info("FETCHING CURRENT IMAGE FROM STATE")
-    GenServer.call(server, {:get_current_gif, socket_id})
+    GenServer.call(server, {:get_current_image, socket_id})
   end
 
   def submit_answer(server, socket_id, room_topic) do
@@ -260,7 +251,7 @@ defmodule CardsWeb.Game do
   end
 
   def current_image_for_user(state, user_id) do
-    current_index = get_in(state, [:users, user_id, :gif_index])
+    current_index = get_in(state, [:users, user_id, :image_index])
     links = get_in(state, [:users, user_id, :links])
     {:ok, current_image} = Enum.fetch(links, current_index)
     current_image
