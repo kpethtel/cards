@@ -144,7 +144,7 @@ defmodule CardsWeb.Game do
     {:noreply, state}
   end
 
-  @imple true
+  @impl true
   def handle_call(:get_candidates, _from, state) do
     users = active_users(state)
     links = Enum.map(users, fn {user, user_data} ->
@@ -156,7 +156,7 @@ defmodule CardsWeb.Game do
     {:reply, links, state}
   end
 
-  @imple true
+  @impl true
   def handle_call(:get_winners, _from, state) do
     # there's gotta be a better way than this sequence
     ranked = state
@@ -254,6 +254,6 @@ defmodule CardsWeb.Game do
     current_index = get_in(state, [:users, user_id, :image_index])
     links = get_in(state, [:users, user_id, :links])
     {:ok, current_image} = Enum.fetch(links, current_index)
-    current_image
+    %{user_id: user_id, link: current_image}
   end
 end

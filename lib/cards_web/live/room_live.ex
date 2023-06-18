@@ -66,8 +66,8 @@ defmodule CardsWeb.RoomLive do
   @impl true
   def handle_event("vote_for_winner", %{"selection" => selected_id}, socket) do
     CardsWeb.Game.cast_vote(:default, socket.id, selected_id, socket.assigns.topic)
-
-    {:noreply, socket}
+    image = CardsWeb.Game.fetch_current_image(:default, selected_id)
+    {:noreply, assign(socket, images: [image], prompt: "Waiting on other votes")}
   end
 
   @impl true
@@ -144,11 +144,11 @@ defmodule CardsWeb.RoomLive do
         <%= case phase do %>
           <% "voting" -> %>
             <%= for image <- images do %>
-              <img id={get_in(image, [:user_id])} src={get_in(image, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(image, [:user_id])}>
+              <img src={get_in(image, [:link])} phx-click="vote_for_winner" phx-value-selection={get_in(image, [:user_id])}>
             <% end %>
           <% _ -> %>
             <%= for image <- images do %>
-              <img src={image}>
+              <img src={get_in(image, [:link])} phx-click="vote_for_winner"}>
             <% end %>
         <% end %>
       </div>
